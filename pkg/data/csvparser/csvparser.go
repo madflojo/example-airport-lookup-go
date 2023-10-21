@@ -35,6 +35,6 @@ func New() *Parser {
 	return &Parser{}
 }
 
-func (p *Parser) ParseAirport(data []byte) ([]Airport, error) {
+func (p *Parser) ParseAirport(_ []byte) ([]Airport, error) {
 	return nil, nil
 }
