@@ -1,0 +1,25 @@
+{
+    "services": {
+        "airport-lookup": {
+            "name": "airport-lookup",
+            "functions": {
+                "init": {
+                    "filepath": "/functions/init.wasm"
+                },
+                "fetch": {
+                    "filepath": "/functions/fetch.wasm"
+                }
+            },
+            "routes": [
+                {
+                    "type": "init",
+                    "function": "init"
+                },
+                {
+                    "type": "function",
+                    "function": "fetch"
+                }
+            ]
+        }
+    }
+}
