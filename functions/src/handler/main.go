@@ -1,7 +1,7 @@
 package main
 
 import (
-  "fmt"
+	"fmt"
 	"github.com/tarmac-project/tarmac/pkg/sdk"
 )
 
@@ -10,7 +10,7 @@ type Function struct {
 }
 
 func (f *Function) Handler(payload []byte) ([]byte, error) {
-  return []byte("Hello World"), fmt.Errorf("not implemented http handler")
+	return []byte("Hello World"), fmt.Errorf("not implemented http handler")
 	// Parse the incoming request
 
 	// Lookup the airport from cache
