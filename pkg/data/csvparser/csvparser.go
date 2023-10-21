@@ -1,9 +1,5 @@
 package csvparser
 
-import (
-	"github.com/tarmac-project/example-airport-lookup/pkg/data/airport"
-)
-
 type Airport struct {
 	// IATACode is the IATA code of the airport. This is a three letter code and is unique to each airport.
 	IATACode string

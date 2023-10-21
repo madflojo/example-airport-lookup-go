@@ -1,4 +1,4 @@
-module github.com/tarmac-project/example-airport-lookup/functions/src/init
+module github.com/tarmac-project/example-airport-lookup-go/functions/src/init
 
 go 1.21
 
