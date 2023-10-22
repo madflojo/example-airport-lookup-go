@@ -1,8 +1,9 @@
-package csvparser
+package csv
 
 import (
+	"bytes"
 	"github.com/enescakir/emoji"
-	"github.com/tarmac-project/example-airport-lookup-go/pkg/data/airport"
+	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport"
 	"reflect"
 	"testing"
 )
@@ -16,23 +17,6 @@ type RecordToAirportTestCase struct {
 
 func TestRecordToAirport(t *testing.T) {
 	tt := []RecordToAirportTestCase{
-		{
-			name:   "Basic airport record",
-			record: []string{"6523", "00A", "heliport", "Total RF Heliport", "40.070985", "-74.933689", "11", "NA", "US", "US-PA", "Bensalem", "no", "K00A", "", "00A", "https://www.penndot.pa.gov/TravelInPA/airports-pa/Pages/Total-RF-Heliport.aspx", ""},
-			airport: airport.Airport{
-				Continent:    "NA",
-				Emoji:        emoji.FlagForUnitedStates.String(),
-				ISOCountry:   "US",
-				ISORegion:    "US-PA",
-				LocalCode:    "00A",
-				Municipality: "Bensalem",
-				Name:         "Total RF Heliport",
-				Type:         "heliport",
-				TypeEmoji:    emoji.Helicopter.String(),
-				Status:       "open",
-			},
-			err: nil,
-		},
 		{
 			name:   "Heliport",
 			record: []string{"6523", "00A", "heliport", "Total RF Heliport", "40.070985", "-74.933689", "11", "NA", "US", "US-PA", "Bensalem", "no", "K00A", "", "00A", "https://www.penndot.pa.gov/TravelInPA/airports-pa/Pages/Total-RF-Heliport.aspx", ""},
@@ -251,11 +235,19 @@ func TestParseAirport(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run("ParseAirport: "+tc.name, func(t *testing.T) {
-			results, err := ParseAirport(tc.raw)
+			// Create a new parser
+			p, err := New(bytes.NewReader(tc.raw))
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
+			// Parse the file
+			results, err := p.Parse()
+			if err != nil {
+				t.Fatalf("Unexpected error: %v", err)
+			}
+
+			// Validate the records returned
 			if len(results) != tc.records {
 				t.Errorf("Expected %d records, got %d", tc.records, len(results))
 			}
