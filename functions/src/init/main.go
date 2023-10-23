@@ -17,20 +17,20 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 	// Fetch the airport data
 	data, err := f.tarmac.Function.Call("fetch", []byte(""))
 	if err != nil {
-		f.tarmac.Logger.Error(fmt.Sprintf("Failed to fetch airport data", err))
+		f.tarmac.Logger.Error(fmt.Sprintf("Failed to fetch airport data - %s", err))
 		return []byte(""), fmt.Errorf("Failed to fetch airport data: %s", err)
 	}
 
 	// Parse the data
 	parser, err := csv.New(bytes.NewReader(data))
 	if err != nil {
-		f.tarmac.Logger.Error(fmt.Sprintf("Failed to create CSV parser", err))
+		f.tarmac.Logger.Error(fmt.Sprintf("Failed to create CSV parser - %s", err))
 		return []byte(""), fmt.Errorf("Failed to create CSV parser: %s", err)
 	}
 
 	airports, err := parser.Parse()
 	if err != nil {
-		f.tarmac.Logger.Error(fmt.Sprintf("Failed to parse airport data", err))
+		f.tarmac.Logger.Error(fmt.Sprintf("Failed to parse airport data - %s", err))
 		return []byte(""), fmt.Errorf("Failed to parse airport data: %s", err)
 	}
 	f.tarmac.Logger.Info(fmt.Sprintf("Fetched %d airports", len(airports)))
