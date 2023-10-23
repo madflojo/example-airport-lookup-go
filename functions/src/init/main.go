@@ -1,10 +1,10 @@
 package main
 
 import (
-  "bytes"
+	"bytes"
 	"fmt"
+	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport/parsers/csv"
 	"github.com/tarmac-project/tarmac/pkg/sdk"
-  "github.com/tarmac-project/example-airport-lookup-go/pkg/airport/parsers/csv"
 )
 
 type Function struct {
@@ -22,18 +22,18 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 	}
 
 	// Parse the data
-  parser, err := csv.New(bytes.NewReader(data))
-  if err != nil {
-    f.tarmac.Logger.Error(fmt.Sprintf("Failed to create CSV parser", err))
-    return []byte(""), fmt.Errorf("Failed to create CSV parser: %s", err)
-  }
+	parser, err := csv.New(bytes.NewReader(data))
+	if err != nil {
+		f.tarmac.Logger.Error(fmt.Sprintf("Failed to create CSV parser", err))
+		return []byte(""), fmt.Errorf("Failed to create CSV parser: %s", err)
+	}
 
-  airports, err := parser.Parse()
-  if err != nil {
-    f.tarmac.Logger.Error(fmt.Sprintf("Failed to parse airport data", err))
-    return []byte(""), fmt.Errorf("Failed to parse airport data: %s", err)
-  }
-  f.tarmac.Logger.Info(fmt.Sprintf("Fetched %d airports", len(airports)))
+	airports, err := parser.Parse()
+	if err != nil {
+		f.tarmac.Logger.Error(fmt.Sprintf("Failed to parse airport data", err))
+		return []byte(""), fmt.Errorf("Failed to parse airport data: %s", err)
+	}
+	f.tarmac.Logger.Info(fmt.Sprintf("Fetched %d airports", len(airports)))
 
 	// Update the database
 
