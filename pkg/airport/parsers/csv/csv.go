@@ -45,20 +45,17 @@ func (p *Parser) Parse() ([]airport.Airport, error) {
 			return nil, fmt.Errorf("unable to read csv data - %w", err)
 		}
 
-		// Iterate over the CSV records
-		for _, r := range rec {
-			// Convert the record to an Airport
-			a, err := RecordToAirport(r)
-			if err != nil {
-				// Skip headers and records with not enough fields
-				if err == ErrIsHeader || err == ErrNotEnoughFields {
-					continue
-				}
-				return nil, fmt.Errorf("unable to convert record to airport - %w", err)
+		// Convert the record to an Airport
+		a, err := RecordToAirport(rec)
+		if err != nil {
+			// Skip headers and records with not enough fields
+			if err == ErrIsHeader || err == ErrNotEnoughFields {
+				continue
 			}
-			// Append the Airport to the slice
-			airports = append(airports, a)
+			return nil, fmt.Errorf("unable to convert record to airport - %w", err)
 		}
+		// Append the Airport to the slice
+		airports = append(airports, a)
 	}
 
 	// Return the slice of Airports
