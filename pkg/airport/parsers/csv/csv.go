@@ -48,11 +48,8 @@ func (p *Parser) Parse() ([]airport.Airport, error) {
 		// Convert the record to an Airport
 		a, err := RecordToAirport(rec)
 		if err != nil {
-			// Skip headers and records with not enough fields
-			if err == ErrIsHeader || err == ErrNotEnoughFields {
+        // Skip any record level errors
 				continue
-			}
-			return nil, fmt.Errorf("unable to convert record to airport - %w", err)
 		}
 		// Append the Airport to the slice
 		airports = append(airports, a)
