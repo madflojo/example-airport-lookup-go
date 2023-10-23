@@ -1,6 +1,7 @@
 package airport
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -187,7 +188,7 @@ func TestAirport(t *testing.T) {
 				return
 			}
 
-			if result != tc.expected {
+			if !reflect.DeepEqual(result, tc.expected) {
 				t.Errorf("Expected %v, got %v", tc.expected, result)
 			}
 		})

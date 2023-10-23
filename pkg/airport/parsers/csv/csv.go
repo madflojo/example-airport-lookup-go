@@ -30,28 +30,35 @@ func (p *Parser) Parse() ([]airport.Airport, error) {
 	// Create a new CSV Reader
 	reader := csv.NewReader(p.reader)
 
-	// Read the CSV file
-	rec, err := reader.ReadAll()
-	if err != nil {
-		return nil, fmt.Errorf("unable to read csv data - %w", err)
-	}
-
 	// Create a slice of Airports
-	airports := make([]airport.Airport, 0, len(rec))
+	var airports []airport.Airport
 
-	// Iterate over the CSV records
-	for _, r := range rec {
-		// Convert the record to an Airport
-		a, err := RecordToAirport(r)
+	// Read each line of the CSV file
+	for {
+		// Read the CSV file
+		rec, err := reader.Read()
 		if err != nil {
-			// Skip headers and records with not enough fields
-			if err == ErrIsHeader || err == ErrNotEnoughFields {
-				continue
+			// Breakout if we've reached the end of the file
+			if err == io.EOF {
+				break
 			}
-			return nil, fmt.Errorf("unable to convert record to airport - %w", err)
+			return nil, fmt.Errorf("unable to read csv data - %w", err)
 		}
-		// Append the Airport to the slice
-		airports = append(airports, a)
+
+		// Iterate over the CSV records
+		for _, r := range rec {
+			// Convert the record to an Airport
+			a, err := RecordToAirport(r)
+			if err != nil {
+				// Skip headers and records with not enough fields
+				if err == ErrIsHeader || err == ErrNotEnoughFields {
+					continue
+				}
+				return nil, fmt.Errorf("unable to convert record to airport - %w", err)
+			}
+			// Append the Airport to the slice
+			airports = append(airports, a)
+		}
 	}
 
 	// Return the slice of Airports
