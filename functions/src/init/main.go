@@ -1,9 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport/parsers/csv"
 	"github.com/tarmac-project/tarmac/pkg/sdk"
 )
 
@@ -12,30 +10,36 @@ type Function struct {
 }
 
 func (f *Function) Handler(_ []byte) ([]byte, error) {
-	f.tarmac.Logger.Info("Airport raw data download starting")
+	f.tarmac.Logger.Info("Initializing Airport Lookup Service")
 
-	// Fetch the airport data
-	data, err := f.tarmac.Function.Call("fetch", []byte(""))
+	// Create MySQL Database structure
+	query := `CREATE TABLE IF NOT EXISTS airports (
+    local_code VARCHAR(4) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
+    type_emoji VARCHAR(255),
+    continent VARCHAR(255),
+    iso_country VARCHAR(255) NOT NULL,
+    iso_region VARCHAR(255),
+    municipality VARCHAR(255),
+    emoji VARCHAR(255),
+    status VARCHAR(255),
+    PRIMARY KEY (local_code)
+  );`
+	_, err := f.tarmac.SQL.Query(query)
 	if err != nil {
-		f.tarmac.Logger.Error(fmt.Sprintf("Failed to fetch airport data - %s", err))
-		return []byte(""), fmt.Errorf("Failed to fetch airport data: %s", err)
+		f.tarmac.Logger.Error(fmt.Sprintf("Failed to create table - %s", err))
+		return []byte(""), fmt.Errorf("Failed to create table: %s", err)
 	}
+	f.tarmac.Logger.Info("Created database table")
 
-	// Parse the data
-	parser, err := csv.New(bytes.NewReader(data))
+	// Load Airport Data
+	_, err = f.tarmac.Function.Call("load", []byte(""))
 	if err != nil {
-		f.tarmac.Logger.Error(fmt.Sprintf("Failed to create CSV parser - %s", err))
-		return []byte(""), fmt.Errorf("Failed to create CSV parser: %s", err)
+		f.tarmac.Logger.Error(fmt.Sprintf("Failed to load airport data - %s", err))
+		return []byte(""), fmt.Errorf("Failed to load airport data: %s", err)
 	}
-
-	airports, err := parser.Parse()
-	if err != nil {
-		f.tarmac.Logger.Error(fmt.Sprintf("Failed to parse airport data - %s", err))
-		return []byte(""), fmt.Errorf("Failed to parse airport data: %s", err)
-	}
-	f.tarmac.Logger.Info(fmt.Sprintf("Fetched %d airports", len(airports)))
-
-	// Update the database
+	f.tarmac.Logger.Info("Loaded airport data")
 
 	return []byte(""), nil
 }
