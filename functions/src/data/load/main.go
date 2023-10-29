@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport/parsers/csv"
 	"github.com/tarmac-project/tarmac/pkg/sdk"
+	"html"
 )
 
 type Function struct {
@@ -73,25 +74,25 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
       municipality = '%s',
       emoji = '%s',
       status = '%s';`,
-			airport.LocalCode,
-			airport.Name,
-			airport.Type,
-			airport.TypeEmoji,
-			airport.Continent,
-			airport.ISOCountry,
-			airport.ISORegion,
-			airport.Municipality,
-			airport.Emoji,
-			airport.Status,
-			airport.Name,
-			airport.Type,
-			airport.TypeEmoji,
-			airport.Continent,
-			airport.ISOCountry,
-			airport.ISORegion,
-			airport.Municipality,
-			airport.Emoji,
-			airport.Status,
+			html.EscapeString(airport.LocalCode),
+			html.EscapeString(airport.Name),
+			html.EscapeString(airport.Type),
+			html.EscapeString(airport.TypeEmoji),
+			html.EscapeString(airport.Continent),
+			html.EscapeString(airport.ISOCountry),
+			html.EscapeString(airport.ISORegion),
+			html.EscapeString(airport.Municipality),
+			html.EscapeString(airport.Emoji),
+			html.EscapeString(airport.Status),
+			html.EscapeString(airport.Name),
+			html.EscapeString(airport.Type),
+			html.EscapeString(airport.TypeEmoji),
+			html.EscapeString(airport.Continent),
+			html.EscapeString(airport.ISOCountry),
+			html.EscapeString(airport.ISORegion),
+			html.EscapeString(airport.Municipality),
+			html.EscapeString(airport.Emoji),
+			html.EscapeString(airport.Status),
 		)
 		f.tarmac.Logger.Trace(fmt.Sprintf("Executing query: %s", query))
 
@@ -99,6 +100,7 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 		if err != nil {
 			f.tarmac.Logger.Debug(fmt.Sprintf("Failed to execute query - %s", err))
 			failure++
+			continue
 		}
 		success++
 	}
