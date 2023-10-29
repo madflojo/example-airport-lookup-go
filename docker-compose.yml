@@ -1,15 +1,28 @@
 version: '3.8'
 services:
   airport-lookup-example:
-    image: tarmac:local
+    image: madflojo/tarmac:unstable
     ports:
       - 80:8080
     environment:
       - "APP_ENABLE_TLS=false"
       - "APP_LISTEN_ADDR=0.0.0.0:8080"
-      - "APP_DEBUG=true"
-      - "APP_TRACE=true"
+      - "APP_DEBUG=false"
+      - "APP_TRACE=false"
       - "APP_WASM_FUNCTION_CONFIG=/config/tarmac.json"
+      - "APP_ENABLE_SQL=true"
+      - "APP_SQL_TYPE=mysql"
+      - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
     volumes:
       - "./config:/config"
       - "./functions/build:/functions"
+    depends_on:
+      - mysql
+  mysql:
+    image: bitnami/mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: example
+    ports:
+      - 3306:3306

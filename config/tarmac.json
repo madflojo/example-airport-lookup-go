@@ -6,6 +6,9 @@
                 "init": {
                     "filepath": "/functions/init.wasm"
                 },
+                "load": {
+                    "filepath": "/functions/load.wasm"
+                },
                 "fetch": {
                     "filepath": "/functions/fetch.wasm"
                 }
@@ -14,6 +17,15 @@
                 {
                     "type": "init",
                     "function": "init"
+                },
+                {
+                    "type": "scheduled_task",
+                    "function": "load",
+                    "frequency": 900
+                },
+                {
+                    "type": "function",
+                    "function": "load"
                 },
                 {
                     "type": "function",

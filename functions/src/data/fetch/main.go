@@ -10,12 +10,12 @@ type Function struct {
 }
 
 func (f *Function) Handler(_ []byte) ([]byte, error) {
-	f.tarmac.Logger.Debug("Fetch function initiated, Downloading airports.csv")
+	f.tarmac.Logger.Info("Downloading airports.csv")
 	rsp, err := f.tarmac.HTTP.Get("https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv")
 	if err != nil {
 		return []byte(""), fmt.Errorf("failed to get airports.csv: %w", err)
 	}
-	f.tarmac.Logger.Trace(fmt.Sprintf("airports.csv downloaded with return code: %d", rsp.StatusCode))
+	f.tarmac.Logger.Info(fmt.Sprintf("airports.csv downloaded with return code: %d", rsp.StatusCode))
 
 	if rsp.StatusCode >= 299 {
 		f.tarmac.Logger.Error(fmt.Sprintf("airports.csv download failed with return code: %d", rsp.StatusCode))
