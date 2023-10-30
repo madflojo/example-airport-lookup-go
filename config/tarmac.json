@@ -11,9 +11,18 @@
                 },
                 "fetch": {
                     "filepath": "/functions/fetch.wasm"
+                },
+                "handler": {
+                    "filepath": "/functions/handler.wasm"
                 }
             },
             "routes": [
+                {
+                    "type": "http",
+                    "path": "/",
+                    "methods": ["POST"],
+                    "function": "handler"
+                },
                 {
                     "type": "init",
                     "function": "init"

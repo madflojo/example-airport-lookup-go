@@ -13,11 +13,15 @@ services:
       - "APP_ENABLE_SQL=true"
       - "APP_SQL_TYPE=mysql"
       - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
+      - "APP_ENABLE_KVSTORE=true"
+      - "APP_KVSTORE_TYPE=redis"
+      - "APP_REDIS_SERVER=redis:6379"
     volumes:
       - "./config:/config"
       - "./functions/build:/functions"
     depends_on:
       - mysql
+      - redis
   mysql:
     image: bitnami/mysql:latest
     restart: always
@@ -26,3 +30,7 @@ services:
       MYSQL_DATABASE: example
     ports:
       - 3306:3306
+  redis:
+    image: bitnami/redis:latest
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes

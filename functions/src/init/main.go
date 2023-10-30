@@ -14,7 +14,7 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 
 	// Create MySQL Database structure
 	query := `CREATE TABLE IF NOT EXISTS airports (
-    local_code VARCHAR(4) NOT NULL UNIQUE,
+    local_code VARCHAR(25) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     type VARCHAR(255) NOT NULL,
     type_emoji VARCHAR(255),
