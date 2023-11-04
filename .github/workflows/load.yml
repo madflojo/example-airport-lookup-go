@@ -20,7 +20,8 @@ jobs:
     - name: Configure Test
       run: |
         cat << EOF > loadtest-config.yml
-          url: http://localhost:8080
+          url: http://localhost
+          payloadStr: '{"local_code":"PHX"}'
           SLOs:
             http/error-rate: 0
             http/latency-p99.9: 5
