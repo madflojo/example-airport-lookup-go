@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Run the Service
-      run: make run
+      run: make run-background
     - name: Wait for the Service to be ready
       run: |
         while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost/ready)" != "200" ]]; do sleep 5; done
