@@ -21,6 +21,7 @@ tests:
 
 docker-compose:
 	docker compose up -d mysql
+	sleep 15
 	docker compose up airport-lookup-example
 
 run: build docker-compose
