@@ -21,10 +21,17 @@ tests:
 
 docker-compose:
 	docker compose up -d mysql
+	sleep 15
 	docker compose up airport-lookup-example
+
+docker-compose-background:
+	docker compose up -d mysql
+	sleep 15
+	docker compose up -d airport-lookup-example
 
 run: build docker-compose
 run-nobuild: docker-compose
+run-background: build docker-compose-background
 
 clean:
 	rm -rf functions/build
