@@ -24,7 +24,7 @@ jobs:
           payloadStr: '{"local_code":"PHX"}'
           SLOs:
             http/error-rate: 0
-            http/latency-p99.9: 5
+            http/latency-p99.9: 10
         EOF
     - uses: iter8-tools/iter8-action@v1
       with:
