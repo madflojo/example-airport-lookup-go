@@ -16,7 +16,7 @@ build:
 tests:
 	## Run tests
 	mkdir -p coverage
-	go test -v -race -covermode=atomic -coverprofile=coverage/coverage.out ./... ./functions/src/init/... ./functions/src/data/fetch/... ./functions/src/handler/... ./functions/src/data/load/...
+	go test -v -race -covermode=atomic -coverprofile=coverage/coverage.out ./...
 	go tool cover -html=coverage/coverage.out -o coverage/coverage.html
 
 docker-compose:
