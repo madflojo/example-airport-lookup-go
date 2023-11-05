@@ -37,11 +37,14 @@ func TestDecodeFields(t *testing.T) {
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
 			result, err := decodeData(tc.input)
-			if err != nil && !tc.err {
-				t.Errorf("Expected no error, got %v", err)
+			if err != nil {
+				if !tc.err {
+					t.Errorf("Expected no error, got %v", err)
+				}
+				return
 			}
 			if err == nil && tc.err {
-				t.Errorf("Expected error, got none")
+				t.Fatalf("Expected error, got none")
 			}
 
 			for k, v := range tc.expected {
