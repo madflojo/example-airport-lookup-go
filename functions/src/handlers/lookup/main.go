@@ -1,3 +1,8 @@
+/*
+This function is a lookup request handler function. When a request is received, this function is called and will parse 
+the incoming request, look up the requested airport from the cache, on cache miss, find the requested data in the 
+database, and provide it back as a response to the request.
+*/
 package main
 
 import (
@@ -8,10 +13,14 @@ import (
 	"html"
 )
 
+// Function is the main function object that will be initialized
+// and called by the Tarmac SDK.
 type Function struct {
 	tarmac *sdk.Tarmac
 }
 
+// Handler is the entry point for the function and will be called
+// when a request is received.
 func (f *Function) Handler(payload []byte) ([]byte, error) {
 	// Parse the incoming request
 	lc := fastjson.GetString(payload, "local_code")

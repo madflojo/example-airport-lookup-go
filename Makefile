@@ -1,16 +1,16 @@
-## Makefile for Tarmac Example Project
-
 build:
-	## Create build directory
-	mkdir -p functions/build
 	## Build Init Function
-	docker run --rm -v `pwd`:/build -w /build/functions/build/init tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/init.wasm -target wasi /build/functions/src/init/main.go
+	mkdir -p functions/build/data
+	docker run --rm -v `pwd`:/build -w /build/functions/build/data/init tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/data/init.wasm -target wasi /build/functions/src/data/init/main.go
 	## Build CSV Fetch Function
-	docker run --rm -v `pwd`:/build -w /build/functions/build/data/fetch tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/fetch.wasm -target wasi /build/functions/src/data/fetch/main.go
+	mkdir -p functions/build/data
+	docker run --rm -v `pwd`:/build -w /build/functions/build/data/fetch tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/data/fetch.wasm -target wasi /build/functions/src/data/fetch/main.go
 	## Build CSV Load Function
-	docker run --rm -v `pwd`:/build -w /build/functions/build/data/load tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/load.wasm -target wasi /build/functions/src/data/load/main.go
+	mkdir -p functions/build/data
+	docker run --rm -v `pwd`:/build -w /build/functions/build/data/load tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/data/load.wasm -target wasi /build/functions/src/data/load/main.go
 	## Build HTTP Request Handler Function
-	docker run --rm -v `pwd`:/build -w /build/functions/build/handler tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/handler.wasm -target wasi /build/functions/src/handler/main.go
+	mkdir -p functions/build/handlers
+	docker run --rm -v `pwd`:/build -w /build/functions/build/handlers/lookup/ tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/handlers/lookup.wasm -target wasi /build/functions/src/handlers/lookup/main.go
 
 .PHONY: tests
 tests:
@@ -18,6 +18,8 @@ tests:
 	mkdir -p coverage
 	go test -v -race -covermode=atomic -coverprofile=coverage/coverage.out ./...
 	go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+	## Run tests for the lookup function
+	$(MAKE) -C functions/src/handlers/lookup tests
 
 docker-compose:
 	docker compose up -d mysql

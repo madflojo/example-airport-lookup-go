@@ -1,3 +1,7 @@
+/*
+This function fetches airport data from a remote CSV file via HTTP and returns it to the application. It is designed
+for reuse throughout the application.
+*/
 package main
 
 import (
