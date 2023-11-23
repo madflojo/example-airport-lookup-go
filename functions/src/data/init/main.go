@@ -1,3 +1,8 @@
+/*
+This function executes on startup to verify the database setup and load initial airport data.
+
+The service will not start until the database is setup and the initial data is loaded.
+*/
 package main
 
 import (

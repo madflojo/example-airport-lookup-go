@@ -1,3 +1,10 @@
+/*
+The purpose of this function is to download the CSV data (by calling another function), parse it, enrich the data, and 
+load the contents within the SQL database.
+
+This function is called multiple times throughout the application. It's called by an "init" function and also set 
+as a scheduled task by itself.
+*/
 package main
 
 import (
