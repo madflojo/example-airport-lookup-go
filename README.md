@@ -62,7 +62,7 @@ service dependencies are up and accessible. If everything is up and ready, a `20
 This service leverages metrics & logging for observability. Users can enable Debug and Trace logging via the 
 environment variable configuration in the `docker-compose.yml` file.
 
-Applications metrics are exposed via the `/metrics` end-point.
+Applications metrics are exposed via the `/metrics` end-point. With a dashboard available at <http://localhost:3000/> (username: admin, password: example).
 
 #### Caching
 
