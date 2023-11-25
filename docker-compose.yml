@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  airport-lookup-example:
+  example-basic:
     image: madflojo/tarmac:unstable
     ports:
       - 80:8080
@@ -22,9 +22,36 @@ services:
     depends_on:
       - mysql
       - redis
+
+  example:
+    image: madflojo/tarmac:unstable
+    ports:
+      - 80:8080
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_LISTEN_ADDR=0.0.0.0:8080"
+      - "APP_DEBUG=false"
+      - "APP_TRACE=false"
+      - "APP_WASM_FUNCTION_CONFIG=/config/tarmac.json"
+      - "APP_ENABLE_SQL=true"
+      - "APP_SQL_TYPE=mysql"
+      - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
+      - "APP_ENABLE_KVSTORE=true"
+      - "APP_KVSTORE_TYPE=redis"
+      - "APP_REDIS_SERVER=redis:6379"
+    volumes:
+      - "./config:/config"
+      - "./functions/build:/functions"
+    depends_on:
+      - mysql
+      - redis
+      - grafana
+
+
+  # Dependencies
   mysql:
     image: bitnami/mysql:latest
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: example
@@ -32,5 +59,34 @@ services:
       - 3306:3306
   redis:
     image: bitnami/redis:latest
+    restart: unless-stopped
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/config/prometheus.yml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ./config:/config
+      - prom_data:/prometheus
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=example
+    volumes:
+      - ./config/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+      - ./config/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    
+volumes:
+  prom_data:

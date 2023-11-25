@@ -24,12 +24,12 @@ tests:
 docker-compose:
 	docker compose up -d mysql
 	sleep 15
-	docker compose up airport-lookup-example
+	docker compose up example
 
 docker-compose-background:
 	docker compose up -d mysql
 	sleep 15
-	docker compose up -d airport-lookup-example
+	docker compose up -d example
 
 run: build docker-compose
 run-nobuild: docker-compose
