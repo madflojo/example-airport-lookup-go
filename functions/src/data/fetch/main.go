@@ -37,7 +37,7 @@ func main() {
 
 	// Initialize the Tarmac SDK
 	f.tarmac, err = sdk.New(sdk.Config{
-		Namespace: "airport-lookup",
+		Namespace: "tarmac",
 		Handler:   f.Handler,
 	})
 	if err != nil {
