@@ -1,6 +1,6 @@
 /*
-This function is a lookup request handler function. When a request is received, this function is called and will parse 
-the incoming request, look up the requested airport from the cache, on cache miss, find the requested data in the 
+This function is a lookup request handler function. When a request is received, this function is called and will parse
+the incoming request, look up the requested airport from the cache, on cache miss, find the requested data in the
 database, and provide it back as a response to the request.
 */
 package main
@@ -8,9 +8,10 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	"html"
+
 	"github.com/tarmac-project/tarmac/pkg/sdk"
 	"github.com/valyala/fastjson"
-	"html"
 )
 
 // Function is the main function object that will be initialized
