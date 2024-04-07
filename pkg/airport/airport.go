@@ -2,6 +2,7 @@ package airport
 
 import (
 	"fmt"
+
 	"github.com/enescakir/emoji"
 )
 

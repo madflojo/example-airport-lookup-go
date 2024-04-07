@@ -3,8 +3,9 @@ package csv
 import (
 	"encoding/csv"
 	"fmt"
-	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport"
 	"io"
+
+	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport"
 )
 
 var (

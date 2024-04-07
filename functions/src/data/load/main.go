@@ -1,8 +1,8 @@
 /*
-The purpose of this function is to download the CSV data (by calling another function), parse it, enrich the data, and 
+The purpose of this function is to download the CSV data (by calling another function), parse it, enrich the data, and
 load the contents within the SQL database.
 
-This function is called multiple times throughout the application. It's called by an "init" function and also set 
+This function is called multiple times throughout the application. It's called by an "init" function and also set
 as a scheduled task by itself.
 */
 package main
@@ -10,9 +10,10 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"html"
+
 	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport/parsers/csv"
 	"github.com/tarmac-project/tarmac/pkg/sdk"
-	"html"
 )
 
 type Function struct {

@@ -2,10 +2,11 @@ package csv
 
 import (
 	"bytes"
-	"github.com/enescakir/emoji"
-	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport"
 	"reflect"
 	"testing"
+
+	"github.com/enescakir/emoji"
+	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport"
 )
 
 type RecordToAirportTestCase struct {

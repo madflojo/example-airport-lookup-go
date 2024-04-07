@@ -11,6 +11,9 @@ jobs:
   golangci:
     name: golangci
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        modules: [ ".", "./functions/src/data/init", "./functions/src/data/fetch", "./functions/src/data/load", "./functions/src/handlers/lookup"]
     steps:
       - uses: actions/setup-go@v3
         with:
@@ -23,7 +26,7 @@ jobs:
           version: latest
 
           # Optional: working directory, useful for monorepos
-          # working-directory: somedir
+          working-directory: ${{ matrix.modules }}
 
           # Optional: golangci-lint command line arguments.
           args: -E misspell -E revive -E bodyclose -E errname -E gofmt --timeout=5m
