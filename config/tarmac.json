@@ -34,7 +34,7 @@
                 {
                     "type": "scheduled_task",
                     "function": "load",
-                    "frequency": 900
+                    "frequency": 300
                 },
                 {
                     "type": "function",

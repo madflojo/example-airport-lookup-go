@@ -1,0 +1,25 @@
+{
+  "hosts": {
+    "airport-lookup-example.com": "lookup",
+    "airport-data-manager.com": "data-manager"
+  },
+  "stages": [
+    {
+      "duration": "10m",
+      "target": 100
+    },
+    {
+      "duration": "2h",
+      "target": 100
+    },
+    {
+      "duration": "10m",
+      "target": 0
+    }
+  ],
+  "thresholds": {
+    "http_req_duration": ["avg<100", "p(95)<200"]
+  },
+  "noConnectionReuse": false,
+  "userAgent": "MyK6UserAgentString/1.0"
+}

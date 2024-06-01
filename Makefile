@@ -24,16 +24,21 @@ tests:
 docker-compose:
 	docker compose up -d mysql
 	sleep 15
-	docker compose up example
+	docker compose up data-manager lookup
 
 docker-compose-background:
-	docker compose up -d mysql
-	sleep 15
-	docker compose up -d example
 
 run: build docker-compose
 run-nobuild: docker-compose
 run-background: build docker-compose-background
+run-stress: 
+	docker compose up -d mysql
+	sleep 15
+	docker compose up data-manager lookup k6-stress --exit-code-from k6-stress
+run-soak:
+	docker compose up -d mysql
+	sleep 15
+	docker compose up data-manager lookup k6-soak --exit-code-from k6-soak
 
 clean:
 	rm -rf functions/build

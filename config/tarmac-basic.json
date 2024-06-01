@@ -1,0 +1,21 @@
+{
+    "services": {
+        "airport-lookup": {
+            "name": "airport-lookup",
+            "functions": {
+                "handler": {
+                    "filepath": "/functions/handlers/lookup.wasm",
+                    "pool_size": 1000
+                }
+            },
+            "routes": [
+                {
+                    "type": "http",
+                    "path": "/",
+                    "methods": ["POST"],
+                    "function": "handler"
+                }
+            ]
+        }
+    }
+}
