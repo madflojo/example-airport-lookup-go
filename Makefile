@@ -31,11 +31,11 @@ docker-compose-background:
 run: build docker-compose
 run-nobuild: docker-compose
 run-background: build docker-compose-background
-run-stress: 
+run-stress: build
 	docker compose up -d mysql
 	sleep 15
 	docker compose up data-manager lookup k6-stress --exit-code-from k6-stress
-run-soak:
+run-soak: build
 	docker compose up -d mysql
 	sleep 15
 	docker compose up data-manager lookup k6-soak --exit-code-from k6-soak
