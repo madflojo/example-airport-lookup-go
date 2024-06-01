@@ -12,9 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Run the data-manager
+    - name: Run the Service
       run: make run-background
-    - name: Wait for the data-manager to start
-      run: while ! curl -s http://localhost:8080/ready; do sleep 1; done
+    - name: Wait for the Service to be ready
+      run: |
+        while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost/ready)" != "200" ]]; do sleep 5; done
     - name: Run the load tests
       run: make run-stress
