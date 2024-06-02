@@ -63,6 +63,7 @@ services:
 
   # Dependencies
   mysql:
+    container_name: mysql
     image: bitnami/mysql:latest
     restart: unless-stopped
     healthcheck:
@@ -76,6 +77,7 @@ services:
     ports:
       - 3306:3306
   redis:
+    container_name: redis
     image: bitnami/redis:latest
     restart: unless-stopped
     healthcheck:

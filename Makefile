@@ -22,12 +22,12 @@ tests:
 	$(MAKE) -C functions/src/handlers/lookup tests
 
 docker-compose:
-	docker compose up -d mysql
+	docker compose up -d mysql redis
 	sleep 15
 	docker compose up data-manager lookup
 
 docker-compose-background:
-	docker compose up -d mysql
+	docker compose up -d mysql redis
 	sleep 15
 	docker compose up -d data-manager lookup
 
