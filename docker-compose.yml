@@ -20,7 +20,7 @@ services:
       - "APP_SQL_TYPE=mysql"
       - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
       - "APP_ENABLE_KVSTORE=true"
-      - "APP_KVSTORE_TYPE=in-memory"
+      - "APP_KVSTORE_TYPE=redis"
       - "APP_REDIS_SERVER=redis:6379"
     volumes:
       - "./config:/config"
@@ -50,7 +50,7 @@ services:
       - "APP_SQL_TYPE=mysql"
       - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
       - "APP_ENABLE_KVSTORE=true"
-      - "APP_KVSTORE_TYPE=in-memory"
+      - "APP_KVSTORE_TYPE=redis"
       - "APP_REDIS_SERVER=redis:6379"
     volumes:
       - "./config:/config"
