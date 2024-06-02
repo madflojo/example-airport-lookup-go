@@ -27,13 +27,16 @@ docker-compose:
 	docker compose up data-manager lookup
 
 docker-compose-background:
+	docker compose up -d mysql
+	sleep 15
+	docker compose up -d data-manager lookup
 
 run: build docker-compose
 run-nobuild: docker-compose
 run-background: build docker-compose-background
-run-stress: build run-background
+run-stress: run-background
 	docker compose up lookup k6-stress --exit-code-from k6-stress
-run-soak: build run-background
+run-soak: run-background
 	docker compose up lookup k6-soak --exit-code-from k6-soak
 
 
