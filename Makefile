@@ -26,18 +26,18 @@ docker-compose:
 	sleep 15
 	docker compose up data-manager lookup
 
-docker-compose-background:
-	docker compose up -d mysql redis
+loadtest-setup:
+	docker compose -f load-compose.yml up -d mysql
 	sleep 15
-	docker compose up -d data-manager lookup
+	docker compose -f load-compose.yml up -d data-manager lookup
 
 run: build docker-compose
 run-nobuild: docker-compose
 run-background: build docker-compose-background
-run-stress: run-background
-	docker compose up mysql redis data-manager lookup k6-stress --exit-code-from k6-stress
-run-soak: run-background
-	docker compose up lookup k6-soak --exit-code-from k6-soak
+run-stress: build loadtest-setup
+	docker compose -f load-compose.yml up lookup k6-stress --exit-code-from k6-stress
+run-soak: build loadtest-setup
+	docker compose -f load-compose.yml up lookup k6-soak --exit-code-from k6-soak
 
 
 clean:
