@@ -17,4 +17,4 @@ jobs:
         make build loadtest-setup
     - name: Wait for the Service to be ready
       run: |
-        while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://data-manager:9080/ready)" != "200" ]]; do sleep 5; done
+        while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080/ready)" != "200" ]]; do sleep 5; done
