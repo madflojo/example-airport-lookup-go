@@ -1,7 +1,6 @@
 {
   "hosts": {
-    "airport-lookup-example.com": "lookup",
-    "airport-data-manager.com": "data-manager"
+    "localhost": "localhost"
   },
   "stages": [
     {

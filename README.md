@@ -17,7 +17,7 @@ The table below describes each function and its purpose.
 
 | Function | Description |
 |----------|-------------|
-| handlers/lookup | This function is the main API handler. It receives a POST request with a local_code parameter and returns the airport details. It first looks up the airport data in its Key:Value cache and, if not found, searches the SQL database and updates the cache. |
+| handlers/lookup | This function is the main API handler. It receives a POST request and returns the airport details. It first looks up the airport data in its Key:Value cache and, if not found, searches the SQL database. |
 | data/init | This function initializes the SQL database and triggers the load function. |
 | data/load | This function calls the fetch function parses the CSV data and stores it in the SQL database. |
 | data/fetch | This function downloads the airport data CSV file. |

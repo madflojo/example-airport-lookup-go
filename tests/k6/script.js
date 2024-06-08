@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export default function () {
-  const url = 'http://airport-lookup-example.com/';
+  const url = 'http://localhost/';
   const payload = JSON.stringify({
     "local_code": "PHX"
   });
