@@ -1,6 +1,6 @@
 {
   "hosts": {
-    "airport-lookup-example.com": "lookup"
+    "airport-lookup-example.com": "localhost"
   },
   "stages": [
     {

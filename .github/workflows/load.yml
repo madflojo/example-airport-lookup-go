@@ -19,5 +19,7 @@ jobs:
       run: |
         while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' http://localhost:8080/ready)" != "200" ]]; do sleep 5; done
     - name: Run Stress Tests
-      run: |
-        make run-stress
+      uses: grafana/k6-action@v0.3.1
+      with:
+        filename: tests/k6/script.js
+        flags: --config tests/k6/stress.json

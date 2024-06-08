@@ -69,15 +69,6 @@ services:
       MYSQL_DATABASE: example
     ports:
       - 3306:3306
-  k6-stress:
-    image: grafana/k6
-    container_name: k6
-    volumes:
-      - ./tests:/tests
-    command: run --config /tests/k6/stress.json /tests/k6/script.js
-    depends_on:
-      - lookup
-      - data-manager
     
 volumes:
   prom_data:

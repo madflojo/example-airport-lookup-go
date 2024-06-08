@@ -35,9 +35,11 @@ run: build docker-compose
 run-nobuild: docker-compose
 run-background: build docker-compose-background
 run-stress: build loadtest-setup
-	docker compose -f load-compose.yml up lookup k6-stress --exit-code-from k6-stress
+	k6 run --config tests/k6/stress.json tests/k6/script.js
 run-soak: build loadtest-setup
-	docker compose -f load-compose.yml up lookup k6-soak --exit-code-from k6-soak
+	k6 run --config tests/k6/soak.json tests/k6/script.js
+run-steady: build loadtest-setup
+	k6 run --config tests/k6/steady.json tests/k6/script.js
 
 
 clean:

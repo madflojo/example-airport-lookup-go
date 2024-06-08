@@ -1,73 +1,139 @@
-# Airport Lookup - Go
 
-The goal of this project is to serve as an example for building Go applications with the 
-[Tarmac application framework](https://github.com/tarmac-project/tarmac). As Tarmac 
-continues to evolve, so does this project; contributions, of course, are welcomed!
+# Airport Lookup
 
-Tarmac is a new approach to building services and leverages WebAssembly to offer a language-agnostic application 
-framework.
+This project is a practical demonstration of how to build applications with [Tarmac](http://github.com/tarmac-project/tarmac). It's a hands-on guide that shows you how to leverage Tarmac's unique features to create efficient and scalable distributed systems.
 
-The goal of Tarmac is to abstract the non-functionals and let you focus purely on the business logic of your 
-applications and less on the infrastructure and boilerplate code. However, building services with Tarmac is different 
-from building a traditional application.
+Tarmac is a unique approach to building distributed systems. It is an application framework that lets you create your application as a set of serverless-like functions.
 
-Rather than considering an application as a single entity, consider it a collection of serverless functions. A key 
-difference is that this collection of serverless functions runs together and can communicate with each other through 
-internal calls.
+Unlike traditional serverless functions, where you would deploy each function into a serverless platform, Tarmac offers a more efficient approach. With Tarmac, you can compose your functions into a single monolithic application instance or a set of microservices, enhancing your system's scalability and efficiency.
+
+Tarmac lets you create small, testable logic, handles non-functional requirements, and enables you to run them where and how you see fit.
 
 ## Airport Lookup API
 
-This service is a simple API that provides details of Airports. On boot, the service will fetch a CSV containing
-detailed airport information and store the data within a MySQL database.
+This project is a collection of functions that provide a simple API to look up details of Airports worldwide. These functions are WebAssembly modules that the Tarmac application server will run.
 
-The lookup API is accessible via a POST request to `/`.
+The table below describes each function and its purpose.
 
-```console
-$ curl -X POST http://localhost/ -d '{"local_code": "PHX"}' 
-{"local_code": "PHX", "name": "Phoenix Sky Harbor International Airport", "country": "US", "emoji": "🇺🇸", "type": "large_airport", "type_emoji": "✈️", "status": "open"}
+| Function | Description |
+|----------|-------------|
+| handlers/lookup | This function is the main API handler. It receives a POST request with a local_code parameter and returns the airport details. It first looks up the airport data in its Key:Value cache and, if not found, searches the SQL database and updates the cache. |
+| data/init | This function initializes the SQL database and triggers the load function. |
+| data/load | This function calls the fetch function parses the CSV data and stores it in the SQL database. |
+| data/fetch | This function downloads the airport data CSV file. |
+
+Currently, this project showcases two deployment models: a set of microservices where the API traffic is split from the data management tasks or as a single monolith.
+
+### Monolith
+
+In the monolith model, all functions run within a single application instance called lookup. This single lookup service will perform all tasks.
+
+```
+               +----------------------------+                
+               | Lookup                     |                
+               | +---------+                |                
+               | |data/init|                |  +------------+
+               | +----+----+                +-->SQL Database|
+               |      |                     |  +------------+
+               | +----v----+                |                
+               | |data/load|                |                
+               | +----+----+                |                
+               |      |        +----------+ |                
+               |      +-------->data/fetch| |                
+               |               +----------+ |                
+               |                            |                
++----------+   | +---------------+          |  +---------+   
+|API Client+---+->handlers/lookup|          +-->K/V Cache|   
++----------+   | +---------------+          |  +---------+   
+               |                            |                
+               +----------------------------+                
+```
+ 
+### Microservices
+
+In the microservices model, API traffic is handled by a lookup service. This service is the frontend API layer; it serves client requests by first looking up the Airport data in its Key:Value cache and, if not found, searching the SQL database.
+
+A second data-manager service is a backend management process. Its job is to manage the Airport data by periodically downloading and storing it within the SQL database.
+
+```
+               +------------------------------+              
+               |Data Manager                  |              
+               |   +---------+                |              
+               |   |data/init|                |              
+               |   +----+----+                |              
+               |        |                     |              
+               |   +----v----+                |              
+               |   |data/load|                |              
+               |   +----+----+                |              
+               |        |        +----------+ |              
+               |        +-------->data/fetch| |              
+               |                 +----------+ |              
+               |                              |              
+               +-----+-----------------+------+              
+                     |                 |                     
+                +----v----+     +------v-----+               
+                |K/V Cache|     |SQL Database|               
+                +----^----+     +------^-----+               
+                     |                 |                     
+               +-----+-----------------+------+              
+               |Lookup                        |              
++----------+   | +--------------+             |              
+|API Client+---+->handler/lookup|             |              
++----------+   | +--------------+             |              
+               |                              |              
+               +------------------------------+              
 ```
 
-## Running the Service
+The microservices model provides faster and more consistent API response times, as the lookup service no longer has the overhead of downloading the airport data and loading that data into the database.
 
-To run the entire service, use the following make commands.
+## Running the service
+
+To run the microservices deployment, use the following command:
 
 ```console
 $ make run
 ```
 
-This project leverages Docker Compose to run the service and its dependencies. Once the service runs, you can access 
-the API by calling <http://localhost/>.
+This project leverages Docker Compose to run the services and their dependencies. Once the lookup service starts and data is loaded, you can access the API by calling <http://localhost/>.
+
+```console
+$ curl -X POST http://localhost/ -d '{"local_code": "PHX"}'
+{"local_code": "PHX", "name": "Phoenix Sky Harbor International Airport", "country": "US", "emoji": "🇺🇸", "type": "large_airport", "type_emoji": "✈️", "status": "open"}
+```
 
 ### Non-Functionals
 
-This service is meant to showcase the out of the box non-functional capabilities of Tarmac. This section provides a
-high-level overview of the non-functionals implemented within this service.
+One of the best things about Tarmac is its out-of-the-box, non-functional capabilities. With Tarmac, you can think less about making systems reliable and more about your application logic.
+
+The below section provides a high-level overview of the non-functionals implemented within this service.
 
 #### Health and Readiness Checks
 
 This service offers out-of-the-box health and readiness checks accessible via the following end-points.
 
-`/health`
+##### `/health`
 
-The health end-point reflects the liveness of this service. The logic behind this end-point is to return a `200 OK` once 
-the HTTP server is up and running.
+The health end-point reflects the liveness of this service. The logic behind this end-point is to return a 200 OK once the HTTP server runs.
 
-`/ready`
+##### `/ready`
 
-The ready end-point reflects the readiness of this service. The logic behind this end-point is to validate that all 
-service dependencies are up and accessible. If everything is up and ready, a `200 OK` is returned.
+The ready end-point reflects the readiness of this service. The logic behind this end-point is to validate that all service dependencies are up and accessible. If everything is up and ready, a 200 OK is returned.
 
 #### Observability
 
-This service leverages metrics & logging for observability. Users can enable Debug and Trace logging via the 
-environment variable configuration in the `docker-compose.yml` file.
+This service leverages metrics and logging for observability.
 
-Applications metrics are exposed via the `/metrics` end-point. With a dashboard available at <http://localhost:3000/> (username: admin, password: example).
+##### Logging
+
+Users can enable Debug and Trace logging via the environment variable configuration.
+
+##### Metrics
+
+Application metrics are exposed via the `/metrics` end-point. A dashboard is available at <http://localhost:3000> (username: admin, password: example).
 
 #### Caching
 
-This service leverages Redis as a caching layer; as requests to the API arrive, the handler function will store 
-results within Redis and use these results on subsequent requests.
+This service leverages caching. Tarmac supports multiple caching backends via its Key:Value store interface. The default deployment uses Redis, with an in-memory cache used for the load-testing deployment.
 
 ## Project Structure
 
@@ -84,3 +150,7 @@ The functions directory is home to the source code for the various serverless fu
 ### Pkg
 
 The pkg directory is a traditional Go packages directory with packages used and imported throughout this application.
+
+## Contributions
+
+Contributions to this project are welcome! If you have a simple suggestion, please open a pull request. Feel free to open an issue if you have a more complex suggestion.
