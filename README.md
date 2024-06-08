@@ -153,4 +153,4 @@ The pkg directory is a traditional Go packages directory with packages used and 
 
 ## Contributions
 
-Contributions to this project are welcome! If you have a simple suggestion, please open a pull request. Feel free to open an issue if you have a more complex suggestion.
+Contributions to this project are welcome! If you have a simple suggestion, please open a pull request. You are encouraged to open an issue for more complex suggestions.
