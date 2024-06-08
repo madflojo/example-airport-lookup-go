@@ -22,18 +22,33 @@ tests:
 	$(MAKE) -C functions/src/handlers/lookup tests
 
 docker-compose:
-	docker compose up -d mysql
+	docker compose up -d mysql redis
 	sleep 15
-	docker compose up example
+	docker compose up data-manager lookup
 
 docker-compose-background:
-	docker compose up -d mysql
+	docker compose up -d mysql redis
 	sleep 15
-	docker compose up -d example
+	docker compose up -d data-manager lookup
+
+loadtest-setup:
+	docker compose -f load-compose.yml up -d mysql
+	sleep 15
+	docker compose -f load-compose.yml up -d data-manager lookup
 
 run: build docker-compose
 run-nobuild: docker-compose
 run-background: build docker-compose-background
+run-stress: build loadtest-setup
+	sleep 600
+	k6 run --config tests/k6/stress.json tests/k6/script.js
+run-soak: build loadtest-setup
+	sleep 600
+	k6 run --config tests/k6/soak.json tests/k6/script.js
+run-steady: build docker-compose-background
+	sleep 600
+	k6 run --config tests/k6/steady.json tests/k6/script.js
+
 
 clean:
 	rm -rf functions/build

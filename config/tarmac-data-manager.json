@@ -14,19 +14,9 @@
                 "fetch": {
                     "filepath": "/functions/data/fetch.wasm",
                     "pool_size": 1
-                },
-                "handler": {
-                    "filepath": "/functions/handlers/lookup.wasm",
-                    "pool_size": 1000
                 }
             },
             "routes": [
-                {
-                    "type": "http",
-                    "path": "/",
-                    "methods": ["POST"],
-                    "function": "handler"
-                },
                 {
                     "type": "init",
                     "function": "init"
@@ -34,7 +24,7 @@
                 {
                     "type": "scheduled_task",
                     "function": "load",
-                    "frequency": 900
+                    "frequency": 300
                 },
                 {
                     "type": "function",

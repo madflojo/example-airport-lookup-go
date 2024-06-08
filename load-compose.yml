@@ -20,15 +20,12 @@ services:
       - "APP_SQL_TYPE=mysql"
       - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
       - "APP_ENABLE_KVSTORE=true"
-      - "APP_KVSTORE_TYPE=redis"
-      - "APP_REDIS_SERVER=redis:6379"
+      - "APP_KVSTORE_TYPE=in-memory"
     volumes:
       - "./config:/config"
       - "./functions/build:/functions"
     depends_on:
       - mysql
-      - redis
-      - grafana
 
   data-manager:
     container_name: data-manager
@@ -49,17 +46,12 @@ services:
       - "APP_ENABLE_SQL=true"
       - "APP_SQL_TYPE=mysql"
       - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
-      - "APP_ENABLE_KVSTORE=true"
-      - "APP_KVSTORE_TYPE=redis"
-      - "APP_REDIS_SERVER=redis:6379"
+      - "APP_ENABLE_KVSTORE=false"
     volumes:
       - "./config:/config"
       - "./functions/build:/functions"
     depends_on:
       - mysql
-      - redis
-      - grafana
-
 
   # Dependencies
   mysql:
@@ -76,42 +68,6 @@ services:
       MYSQL_DATABASE: example
     ports:
       - 3306:3306
-  redis:
-    container_name: redis
-    image: bitnami/redis:latest
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    command:
-      - '--config.file=/config/prometheus.yml'
-    ports:
-      - 9090:9090
-    restart: unless-stopped
-    volumes:
-      - ./config:/config
-      - prom_data:/prometheus
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    ports:
-      - 3000:3000
-    restart: unless-stopped
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=example
-    volumes:
-      - ./config/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
-      - ./config/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/dashboard.yml
-      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
-    depends_on:
-      - prometheus
     
 volumes:
   prom_data:

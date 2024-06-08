@@ -18,4 +18,5 @@ scrape_configs:
   scheme: http
   static_configs:
   - targets:
-    - example:8080
+    - lookup:8080
+    - data-manager:8080
