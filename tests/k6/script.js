@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export default function () {
-  const url = 'http://lookup:8080/';
+  const url = 'http://airport-lookup-example.com:8080/';
   const payload = JSON.stringify({
     "local_code": "PHX"
   });
