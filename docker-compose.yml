@@ -45,7 +45,7 @@ services:
       - "APP_LISTEN_ADDR=0.0.0.0:8080"
       - "APP_DEBUG=false"
       - "APP_TRACE=false"
-      - "APP_WASM_FUNCTION_CONFIG=/config/tarmaci-data-manager.json"
+      - "APP_WASM_FUNCTION_CONFIG=/config/tarmac-data-manager.json"
       - "APP_ENABLE_SQL=true"
       - "APP_SQL_TYPE=mysql"
       - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
