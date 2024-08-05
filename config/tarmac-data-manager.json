@@ -1,0 +1,40 @@
+{
+    "services": {
+        "airport-lookup": {
+            "name": "airport-lookup",
+            "functions": {
+                "init": {
+                    "filepath": "/functions/data/init.wasm",
+                    "pool_size": 1
+                },
+                "load": {
+                    "filepath": "/functions/data/load.wasm",
+                    "pool_size": 1
+                },
+                "fetch": {
+                    "filepath": "/functions/data/fetch.wasm",
+                    "pool_size": 1
+                }
+            },
+            "routes": [
+                {
+                    "type": "init",
+                    "function": "init"
+                },
+                {
+                    "type": "scheduled_task",
+                    "function": "load",
+                    "frequency": 300
+                },
+                {
+                    "type": "function",
+                    "function": "load"
+                },
+                {
+                    "type": "function",
+                    "function": "fetch"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,73 @@
+version: '3.8'
+services:
+  lookup:
+    container_name: lookup
+    image: madflojo/tarmac:unstable
+    ports:
+      - 80:8080
+    healthcheck: 
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_LISTEN_ADDR=0.0.0.0:8080"
+      - "APP_DEBUG=false"
+      - "APP_TRACE=false"
+      - "APP_WASM_FUNCTION_CONFIG=/config/tarmac-lookup.json"
+      - "APP_ENABLE_SQL=true"
+      - "APP_SQL_TYPE=mysql"
+      - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
+      - "APP_ENABLE_KVSTORE=true"
+      - "APP_KVSTORE_TYPE=in-memory"
+    volumes:
+      - "./config:/config"
+      - "./functions/build:/functions"
+    depends_on:
+      - mysql
+
+  data-manager:
+    container_name: data-manager
+    image: madflojo/tarmac:unstable
+    ports:
+      - 8080:8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      - "APP_ENABLE_TLS=false"
+      - "APP_LISTEN_ADDR=0.0.0.0:8080"
+      - "APP_DEBUG=false"
+      - "APP_TRACE=false"
+      - "APP_WASM_FUNCTION_CONFIG=/config/tarmac-data-manager.json"
+      - "APP_ENABLE_SQL=true"
+      - "APP_SQL_TYPE=mysql"
+      - "APP_SQL_DSN=root:example@tcp(mysql:3306)/example"
+      - "APP_ENABLE_KVSTORE=false"
+    volumes:
+      - "./config:/config"
+      - "./functions/build:/functions"
+    depends_on:
+      - mysql
+
+  # Dependencies
+  mysql:
+    container_name: mysql
+    image: bitnami/mysql:latest
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: example
+    ports:
+      - 3306:3306
+    
+volumes:
+  prom_data:
