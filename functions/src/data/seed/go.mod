@@ -1,10 +1,9 @@
-module github.com/tarmac-project/example-airport-lookup-go/functions/src/data/init
+module github.com/tarmac-project/example-airport-lookup-go/functions/src/data/seed
 
 go 1.23
 
 require (
 	github.com/tarmac-project/sdk v0.2.0
-	github.com/tarmac-project/sdk/function v0.2.0
 	github.com/tarmac-project/sdk/logging v0.2.0
 	github.com/tarmac-project/sdk/sql v0.2.0
 )

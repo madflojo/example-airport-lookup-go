@@ -7,12 +7,8 @@
                     "filepath": "/functions/data/init.wasm",
                     "pool_size": 1
                 },
-                "load": {
-                    "filepath": "/functions/data/load.wasm",
-                    "pool_size": 1
-                },
-                "fetch": {
-                    "filepath": "/functions/data/fetch.wasm",
+                "seed": {
+                    "filepath": "/functions/data/seed.wasm",
                     "pool_size": 1
                 }
             },
@@ -23,16 +19,12 @@
                 },
                 {
                     "type": "scheduled_task",
-                    "function": "load",
-                    "frequency": 300
+                    "function": "seed",
+                    "frequency": 3600
                 },
                 {
                     "type": "function",
-                    "function": "load"
-                },
-                {
-                    "type": "function",
-                    "function": "fetch"
+                    "function": "seed"
                 }
             ]
         }

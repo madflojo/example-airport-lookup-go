@@ -5,16 +5,11 @@ services:
     image: madflojo/tarmac:unstable
     ports:
       - 80:8080
-    healthcheck: 
-      test: ["CMD", "curl", "-f", "http://localhost:8080/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
     environment:
       - "APP_ENABLE_TLS=false"
       - "APP_LISTEN_ADDR=0.0.0.0:8080"
-      - "APP_DEBUG=false"
-      - "APP_TRACE=false"
+      - "APP_DEBUG=true"
+      - "APP_TRACE=true"
       - "APP_WASM_FUNCTION_CONFIG=/config/tarmac-lookup.json"
       - "APP_ENABLE_SQL=true"
       - "APP_SQL_TYPE=mysql"
@@ -35,16 +30,11 @@ services:
     image: madflojo/tarmac:unstable
     ports:
       - 8080:8080
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
     environment:
       - "APP_ENABLE_TLS=false"
       - "APP_LISTEN_ADDR=0.0.0.0:8080"
-      - "APP_DEBUG=false"
-      - "APP_TRACE=false"
+      - "APP_DEBUG=true"
+      - "APP_TRACE=true"
       - "APP_WASM_FUNCTION_CONFIG=/config/tarmac-data-manager.json"
       - "APP_ENABLE_SQL=true"
       - "APP_SQL_TYPE=mysql"
@@ -52,6 +42,7 @@ services:
       - "APP_ENABLE_KVSTORE=true"
       - "APP_KVSTORE_TYPE=redis"
       - "APP_REDIS_SERVER=redis:6379"
+      - "APP_HTTP_CLIENT_MAX_RESPONSE_BODY_SIZE=1048576000"  # 1GB
     volumes:
       - "./config:/config"
       - "./functions/build:/functions"
@@ -64,7 +55,7 @@ services:
   # Dependencies
   mysql:
     container_name: mysql
-    image: bitnami/mysql:latest
+    image: mysql:latest
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
@@ -78,15 +69,13 @@ services:
       - 3306:3306
   redis:
     container_name: redis
-    image: bitnami/redis:latest
+    image: redis:latest
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 3
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
   prometheus:
     image: prom/prometheus
     container_name: prometheus

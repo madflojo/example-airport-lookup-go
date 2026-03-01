@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
+	"strings"
 	"testing"
 )
 
@@ -53,5 +56,113 @@ func TestDecodeFields(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+type ResponseHelperTestCase struct {
+	name          string
+	payload       string
+	expectedParts []string
+}
+
+func TestSuccessResponse(t *testing.T) {
+	tt := []ResponseHelperTestCase{
+		{
+			name:    "WrapsAirportPayload",
+			payload: `{"local_code":"PHX","name":"Phoenix Sky Harbor International Airport"}`,
+			expectedParts: []string{
+				`"ok":true`,
+				`"source":"sql"`,
+				`"airport":{"local_code":"PHX","name":"Phoenix Sky Harbor International Airport"}`,
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			result := string(successResponse("sql", tc.payload))
+			for _, part := range tc.expectedParts {
+				if !strings.Contains(result, part) {
+					t.Fatalf("expected response to contain %q, got %q", part, result)
+				}
+			}
+		})
+	}
+}
+
+func TestErrorResponse(t *testing.T) {
+	tt := []ResponseHelperTestCase{
+		{
+			name:    "IncludesStageAndError",
+			payload: "local_code is required",
+			expectedParts: []string{
+				`"ok":false`,
+				`"stage":"validation"`,
+				`"local_code":""`,
+				`"error":"local_code is required"`,
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			result := string(errorResponse("validation", "", errors.New(tc.payload)))
+			for _, part := range tc.expectedParts {
+				if !strings.Contains(result, part) {
+					t.Fatalf("expected response to contain %q, got %q", part, result)
+				}
+			}
+		})
+	}
+}
+
+type ValidateLocalCodeTestCase struct {
+	name      string
+	localCode string
+	err       bool
+}
+
+func TestValidateLocalCode(t *testing.T) {
+	tt := []ValidateLocalCodeTestCase{
+		{name: "ValidUpper", localCode: "PHX"},
+		{name: "ValidMixed", localCode: "ab12Cd"},
+		{name: "InvalidChars", localCode: `A"OR1=1`, err: true},
+		{name: "InvalidLength", localCode: "ABCDEFGHI", err: true},
+		{name: "InvalidEmpty", localCode: "", err: true},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := validateLocalCode(tc.localCode)
+			if tc.err && err == nil {
+				t.Fatalf("expected error for local_code=%q, got nil", tc.localCode)
+			}
+			if !tc.err && err != nil {
+				t.Fatalf("expected no error for local_code=%q, got %v", tc.localCode, err)
+			}
+		})
+	}
+}
+
+func TestErrorResponseEscapesJSON(t *testing.T) {
+	rawErr := errors.New("bad \"quote\" and \\ slash\nnext line")
+	data := errorResponse("validation", "PHX", rawErr)
+
+	var payload map[string]any
+	if err := json.Unmarshal(data, &payload); err != nil {
+		t.Fatalf("expected valid json, got error: %v", err)
+	}
+
+	if payload["ok"] != false {
+		t.Fatalf("expected ok=false, got %v", payload["ok"])
+	}
+	if payload["stage"] != "validation" {
+		t.Fatalf("expected stage=validation, got %v", payload["stage"])
+	}
+	if payload["local_code"] != "PHX" {
+		t.Fatalf("expected local_code=PHX, got %v", payload["local_code"])
+	}
+	if payload["error"] != rawErr.Error() {
+		t.Fatalf("expected error message to round-trip, got %v", payload["error"])
 	}
 }
