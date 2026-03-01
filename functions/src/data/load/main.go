@@ -10,7 +10,7 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"html"
+	"strings"
 
 	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport/parsers/csv"
 	sdk "github.com/tarmac-project/sdk"
@@ -26,14 +26,18 @@ type Function struct {
 	sql      sdksql.Client
 }
 
+func escapeSQL(v string) string {
+	return strings.ReplaceAll(v, "'", "''")
+}
+
 func (f *Function) Handler(_ []byte) ([]byte, error) {
 	f.logging.Info("Airport raw data download starting")
 
 	// Fetch the airport data
 	data, err := f.function.Call("fetch", []byte(""))
 	if err != nil {
-		f.logging.Error(fmt.Sprintf("Failed to fetch airport data - %s", err))
-		return []byte(""), fmt.Errorf("Failed to fetch airport data: %s", err)
+		f.logging.Error(fmt.Sprintf("failed to fetch airport data: %v", err))
+		return []byte(""), fmt.Errorf("failed to fetch airport data: %w", err)
 	}
 	f.logging.Info(fmt.Sprintf("Airport raw data download complete - %d bytes", len(data)))
 
@@ -42,14 +46,14 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 	// Parse the data
 	parser, err := csv.New(bytes.NewReader(data))
 	if err != nil {
-		f.logging.Error(fmt.Sprintf("Failed to create CSV parser - %s", err))
-		return []byte(""), fmt.Errorf("Failed to create CSV parser: %s", err)
+		f.logging.Error(fmt.Sprintf("failed to create csv parser: %v", err))
+		return []byte(""), fmt.Errorf("failed to create csv parser: %w", err)
 	}
 
 	airports, err := parser.Parse()
 	if err != nil {
-		f.logging.Error(fmt.Sprintf("Failed to parse airport data - %s", err))
-		return []byte(""), fmt.Errorf("Failed to parse airport data: %s", err)
+		f.logging.Error(fmt.Sprintf("failed to parse airport data: %v", err))
+		return []byte(""), fmt.Errorf("failed to parse airport data: %w", err)
 	}
 	f.logging.Info(fmt.Sprintf("Fetched %d airports", len(airports)))
 	if len(airports) == 0 {
@@ -92,25 +96,25 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
       municipality = '%s',
       emoji = '%s',
       status = '%s';`,
-			html.EscapeString(airport.LocalCode),
-			html.EscapeString(airport.Name),
-			html.EscapeString(airport.Type),
-			html.EscapeString(airport.TypeEmoji),
-			html.EscapeString(airport.Continent),
-			html.EscapeString(airport.ISOCountry),
-			html.EscapeString(airport.ISORegion),
-			html.EscapeString(airport.Municipality),
-			html.EscapeString(airport.Emoji),
-			html.EscapeString(airport.Status),
-			html.EscapeString(airport.Name),
-			html.EscapeString(airport.Type),
-			html.EscapeString(airport.TypeEmoji),
-			html.EscapeString(airport.Continent),
-			html.EscapeString(airport.ISOCountry),
-			html.EscapeString(airport.ISORegion),
-			html.EscapeString(airport.Municipality),
-			html.EscapeString(airport.Emoji),
-			html.EscapeString(airport.Status),
+			escapeSQL(airport.LocalCode),
+			escapeSQL(airport.Name),
+			escapeSQL(airport.Type),
+			escapeSQL(airport.TypeEmoji),
+			escapeSQL(airport.Continent),
+			escapeSQL(airport.ISOCountry),
+			escapeSQL(airport.ISORegion),
+			escapeSQL(airport.Municipality),
+			escapeSQL(airport.Emoji),
+			escapeSQL(airport.Status),
+			escapeSQL(airport.Name),
+			escapeSQL(airport.Type),
+			escapeSQL(airport.TypeEmoji),
+			escapeSQL(airport.Continent),
+			escapeSQL(airport.ISOCountry),
+			escapeSQL(airport.ISORegion),
+			escapeSQL(airport.Municipality),
+			escapeSQL(airport.Emoji),
+			escapeSQL(airport.Status),
 		)
 		f.logging.Trace(fmt.Sprintf("Executing query: %s", query))
 

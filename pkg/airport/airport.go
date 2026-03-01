@@ -1,7 +1,7 @@
 package airport
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/enescakir/emoji"
 )
@@ -40,8 +40,8 @@ type Airport struct {
 }
 
 var (
-	ErrMissingFields  = fmt.Errorf("Missing required fields")
-	ErrUnknownCountry = fmt.Errorf("Unable to lookup country emoji")
+	ErrMissingFields  = errors.New("missing required fields")
+	ErrUnknownCountry = errors.New("unable to lookup country emoji")
 )
 
 // Validate validates the airport struct and returns the airport with the emoji and country flag set.

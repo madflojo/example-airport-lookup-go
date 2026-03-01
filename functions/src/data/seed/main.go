@@ -134,6 +134,10 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 		failure,
 	)
 	f.logging.Info(fmt.Sprintf("US primary airport seed complete: %s", summary))
+	if failure > 0 {
+		return []byte(summary), fmt.Errorf("airport seed completed with %d failed upserts: %s", failure, summary)
+	}
+
 	return []byte(summary), nil
 }
 

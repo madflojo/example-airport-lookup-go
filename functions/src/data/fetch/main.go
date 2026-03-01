@@ -13,6 +13,8 @@ import (
 	"github.com/tarmac-project/sdk/logging"
 )
 
+const airportsCSVURL = "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv"
+
 type Function struct {
 	sdk     *sdk.SDK
 	logging logging.Client
@@ -20,9 +22,9 @@ type Function struct {
 }
 
 func (f *Function) Handler(_ []byte) ([]byte, error) {
-	f.logging.Info("Downloading airports.csv")
+	f.logging.Info("downloading airports.csv")
 
-	rsp, err := f.http.Get("https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv")
+	rsp, err := f.http.Get(airportsCSVURL)
 	if err != nil {
 		f.logging.Error(fmt.Sprintf("failed to get airports.csv: %v", err))
 		return nil, fmt.Errorf("failed to get airports.csv: %w", err)
@@ -32,13 +34,17 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 
 	if rsp.StatusCode >= 299 {
 		f.logging.Error(fmt.Sprintf("airports.csv download failed with return code: %d", rsp.StatusCode))
-		return nil, fmt.Errorf("failed to get airports.csv: HTTP request returned %d", rsp.StatusCode)
+		return nil, fmt.Errorf("failed to get airports.csv: http request returned %d", rsp.StatusCode)
 	}
 
 	if rsp.Body == nil {
 		return []byte(""), nil
 	}
-	defer rsp.Body.Close()
+	defer func() {
+		if closeErr := rsp.Body.Close(); closeErr != nil {
+			f.logging.Warn(fmt.Sprintf("failed to close airports.csv response body: %v", closeErr))
+		}
+	}()
 
 	body, err := io.ReadAll(rsp.Body)
 	if err != nil {

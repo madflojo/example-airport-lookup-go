@@ -24,3 +24,6 @@ functions/build
 
 # Ignore vendor directories
 vendor/
+
+# Ignore cache
+.cache/

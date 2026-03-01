@@ -22,7 +22,7 @@ type Function struct {
 }
 
 func (f *Function) Handler(_ []byte) ([]byte, error) {
-	f.logging.Info("Initializing Airport Lookup Service")
+	f.logging.Info("initializing airport lookup service")
 
 	// Create MySQL Database structure
 	query := `CREATE TABLE IF NOT EXISTS airports (
@@ -40,23 +40,23 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
   );`
 	_, err := f.sql.Exec(query)
 	if err != nil {
-		f.logging.Error(fmt.Sprintf("Failed to create table - %s", err))
-		return []byte(""), fmt.Errorf("Failed to create table: %s", err)
+		f.logging.Error(fmt.Sprintf("failed to create table: %v", err))
+		return []byte(""), fmt.Errorf("failed to create table: %w", err)
 	}
-	f.logging.Info("Created database table")
+	f.logging.Info("created database table")
 
 	// Seed baseline airport data
 	loadRsp, err := f.function.Call("seed", []byte(""))
 	if err != nil {
-		f.logging.Error(fmt.Sprintf("Failed to seed airport data - %s", err))
-		return []byte(""), fmt.Errorf("Failed to seed airport data: %s", err)
+		f.logging.Error(fmt.Sprintf("failed to seed airport data: %v", err))
+		return []byte(""), fmt.Errorf("failed to seed airport data: %w", err)
 	}
 	if len(loadRsp) == 0 {
 		f.logging.Warn("Seed function returned empty summary payload")
 	} else {
-		f.logging.Info(fmt.Sprintf("Seed function summary: %s", string(loadRsp)))
+		f.logging.Info(fmt.Sprintf("seed function summary: %s", string(loadRsp)))
 	}
-	f.logging.Info("Seeded airport data")
+	f.logging.Info("seeded airport data")
 
 	return []byte(""), nil
 }
