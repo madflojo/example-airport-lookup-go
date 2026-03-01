@@ -9,7 +9,9 @@ import (
 )
 
 var (
-	ErrIsHeader        = fmt.Errorf("record is a header")
+	// ErrIsHeader is returned when a record represents CSV column headers.
+	ErrIsHeader = fmt.Errorf("record is a header")
+	// ErrNotEnoughFields is returned when a CSV record has fewer required fields.
 	ErrNotEnoughFields = fmt.Errorf("not enough fields")
 )
 

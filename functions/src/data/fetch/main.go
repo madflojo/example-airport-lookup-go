@@ -15,15 +15,26 @@ import (
 
 const airportsCSVURL = "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv"
 
+// Function implements the airport CSV fetch behavior.
 type Function struct {
 	sdk     *sdk.SDK
 	logging logging.Client
 	http    httpclient.Client
 }
 
+// Handler downloads airport CSV data and returns the raw content.
 func (f *Function) Handler(_ []byte) ([]byte, error) {
 	f.logging.Info("downloading airports.csv")
 
+	rsp, err := f.fetchAirportCSV()
+	if err != nil {
+		return nil, err
+	}
+
+	return rsp, nil
+}
+
+func (f *Function) fetchAirportCSV() ([]byte, error) {
 	rsp, err := f.http.Get(airportsCSVURL)
 	if err != nil {
 		f.logging.Error(fmt.Sprintf("failed to get airports.csv: %v", err))
@@ -33,8 +44,13 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 	f.logging.Info(fmt.Sprintf("airports.csv downloaded with return code: %d", rsp.StatusCode))
 
 	if rsp.StatusCode < 200 || rsp.StatusCode >= 300 {
-		f.logging.Error(fmt.Sprintf("airports.csv download failed with return code: %d", rsp.StatusCode))
-		return nil, fmt.Errorf("failed to get airports.csv: http request returned %d", rsp.StatusCode)
+		f.logging.Error(
+			fmt.Sprintf("airports.csv download failed with return code: %d", rsp.StatusCode),
+		)
+		return nil, fmt.Errorf(
+			"failed to get airports.csv: http request returned %d",
+			rsp.StatusCode,
+		)
 	}
 
 	if rsp.Body == nil {
@@ -56,6 +72,8 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 	return body, nil
 }
 
+// Initialize sets up SDK and HTTP clients required by the fetch function.
+//
 //go:wasmexport wapc_init
 func Initialize() {
 	var err error

@@ -9,9 +9,11 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	airportpkg "github.com/tarmac-project/example-airport-lookup-go/pkg/airport"
 	"github.com/tarmac-project/example-airport-lookup-go/pkg/airport/parsers/csv"
 	sdk "github.com/tarmac-project/sdk"
 	functionsdk "github.com/tarmac-project/sdk/function"
@@ -19,11 +21,19 @@ import (
 	sdksql "github.com/tarmac-project/sdk/sql"
 )
 
+// Function loads airport records from remote CSV data into SQL storage.
 type Function struct {
 	sdk      *sdk.SDK
 	logging  logging.Client
 	function functionsdk.Client
 	sql      sdksql.Client
+}
+
+type loadSummary struct {
+	FetchedBytes   int `json:"fetched_bytes"`
+	ParsedAirports int `json:"parsed_airports"`
+	SuccessUpsert  int `json:"successful_upsert"`
+	FailedUpsert   int `json:"failed_upsert"`
 }
 
 func escapeSQL(v string) string {
@@ -42,6 +52,7 @@ func escapeSQL(v string) string {
 	return replacer.Replace(v)
 }
 
+// Handler downloads airport data, parses records, and upserts them into SQL.
 func (f *Function) Handler(_ []byte) ([]byte, error) {
 	f.logging.Info("Airport raw data download starting")
 
@@ -72,11 +83,42 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 		f.logging.Warn("Parsed zero airport records from CSV data")
 	}
 
-	// Update the database
 	success := 0
 	failure := 0
 	for _, airport := range airports {
-		query := fmt.Sprintf(`INSERT INTO airports (
+		query := buildAirportUpsertQuery(airport)
+		f.logging.Trace(fmt.Sprintf("Executing query: %s", query))
+
+		_, err := f.sql.Exec(query)
+		if err != nil {
+			f.logging.Debug(fmt.Sprintf("Failed to execute query - %s", err))
+			failure++
+			continue
+		}
+		success++
+	}
+	f.logging.Info(fmt.Sprintf("Executed %d queries successfully, %d failures", success, failure))
+	summary := marshalLoadSummary(loadSummary{
+		FetchedBytes:   len(data),
+		ParsedAirports: len(airports),
+		SuccessUpsert:  success,
+		FailedUpsert:   failure,
+	})
+	f.logging.Info(fmt.Sprintf("Load summary: %s", string(summary)))
+
+	if failure > 0 {
+		return summary, fmt.Errorf(
+			"load completed with %d failed upserts: %s",
+			failure,
+			string(summary),
+		)
+	}
+
+	return summary, nil
+}
+
+func buildAirportUpsertQuery(ap airportpkg.Airport) string {
+	return fmt.Sprintf(`INSERT INTO airports (
       local_code,
       name,
       type,
@@ -108,53 +150,41 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
       municipality = '%s',
       emoji = '%s',
       status = '%s';`,
-			escapeSQL(airport.LocalCode),
-			escapeSQL(airport.Name),
-			escapeSQL(airport.Type),
-			escapeSQL(airport.TypeEmoji),
-			escapeSQL(airport.Continent),
-			escapeSQL(airport.ISOCountry),
-			escapeSQL(airport.ISORegion),
-			escapeSQL(airport.Municipality),
-			escapeSQL(airport.Emoji),
-			escapeSQL(airport.Status),
-			escapeSQL(airport.Name),
-			escapeSQL(airport.Type),
-			escapeSQL(airport.TypeEmoji),
-			escapeSQL(airport.Continent),
-			escapeSQL(airport.ISOCountry),
-			escapeSQL(airport.ISORegion),
-			escapeSQL(airport.Municipality),
-			escapeSQL(airport.Emoji),
-			escapeSQL(airport.Status),
-		)
-		f.logging.Trace(fmt.Sprintf("Executing query: %s", query))
-
-		_, err := f.sql.Exec(query)
-		if err != nil {
-			f.logging.Debug(fmt.Sprintf("Failed to execute query - %s", err))
-			failure++
-			continue
-		}
-		success++
-	}
-	f.logging.Info(fmt.Sprintf("Executed %d queries successfully, %d failures", success, failure))
-	summary := fmt.Sprintf(
-		`{"fetched_bytes":%d,"parsed_airports":%d,"successful_upsert":%d,"failed_upsert":%d}`,
-		len(data),
-		len(airports),
-		success,
-		failure,
+		escapeSQL(ap.LocalCode),
+		escapeSQL(ap.Name),
+		escapeSQL(ap.Type),
+		escapeSQL(ap.TypeEmoji),
+		escapeSQL(ap.Continent),
+		escapeSQL(ap.ISOCountry),
+		escapeSQL(ap.ISORegion),
+		escapeSQL(ap.Municipality),
+		escapeSQL(ap.Emoji),
+		escapeSQL(ap.Status),
+		escapeSQL(ap.Name),
+		escapeSQL(ap.Type),
+		escapeSQL(ap.TypeEmoji),
+		escapeSQL(ap.Continent),
+		escapeSQL(ap.ISOCountry),
+		escapeSQL(ap.ISORegion),
+		escapeSQL(ap.Municipality),
+		escapeSQL(ap.Emoji),
+		escapeSQL(ap.Status),
 	)
-	f.logging.Info(fmt.Sprintf("Load summary: %s", summary))
-
-	if failure > 0 {
-		return []byte(summary), fmt.Errorf("load completed with %d failed upserts: %s", failure, summary)
-	}
-
-	return []byte(summary), nil
 }
 
+func marshalLoadSummary(summary loadSummary) []byte {
+	data, err := json.Marshal(summary)
+	if err != nil {
+		return []byte(
+			`{"fetched_bytes":0,"parsed_airports":0,"successful_upsert":0,"failed_upsert":0}`,
+		)
+	}
+
+	return data
+}
+
+// Initialize sets up SDK and clients required by the load function.
+//
 //go:wasmexport wapc_init
 func Initialize() {
 	var err error
