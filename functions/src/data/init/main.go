@@ -52,10 +52,10 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 		return []byte(""), fmt.Errorf("failed to seed airport data: %w", err)
 	}
 	if len(loadRsp) == 0 {
-		f.logging.Warn("Seed function returned empty summary payload")
-	} else {
-		f.logging.Info(fmt.Sprintf("seed function summary: %s", string(loadRsp)))
+		f.logging.Error("seed function returned empty summary payload")
+		return []byte(""), fmt.Errorf("seed function returned empty summary payload")
 	}
+	f.logging.Info(fmt.Sprintf("seed function summary: %s", string(loadRsp)))
 	f.logging.Info("seeded airport data")
 
 	return []byte(""), nil

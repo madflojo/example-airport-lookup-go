@@ -27,7 +27,19 @@ type Function struct {
 }
 
 func escapeSQL(v string) string {
-	return strings.ReplaceAll(v, "'", "''")
+	replacer := strings.NewReplacer(
+		"\\", "\\\\",
+		"\x00", "\\0",
+		"\b", "\\b",
+		"\n", "\\n",
+		"\r", "\\r",
+		"\t", "\\t",
+		"\x1a", "\\Z",
+		"'", "\\'",
+		`"`, `\"`,
+	)
+
+	return replacer.Replace(v)
 }
 
 func (f *Function) Handler(_ []byte) ([]byte, error) {
@@ -135,6 +147,10 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 		failure,
 	)
 	f.logging.Info(fmt.Sprintf("Load summary: %s", summary))
+
+	if failure > 0 {
+		return []byte(summary), fmt.Errorf("load completed with %d failed upserts: %s", failure, summary)
+	}
 
 	return []byte(summary), nil
 }

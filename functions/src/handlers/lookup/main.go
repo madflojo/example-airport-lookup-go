@@ -53,7 +53,7 @@ func (f *Function) Handler(payload []byte) ([]byte, error) {
 	}
 
 	// If not in cache, lookup the airport from the database
-	query := fmt.Sprintf(`SELECT * FROM airports WHERE local_code = "%s"`, validatedLocalCode)
+	query := fmt.Sprintf(`SELECT local_code, name, iso_country AS country, emoji, type, type_emoji, status FROM airports WHERE local_code = "%s"`, validatedLocalCode)
 	data, err := f.sql.Query(query)
 	if err != nil {
 		f.logging.Error(fmt.Sprintf("error querying database for %s: %s", validatedLocalCode, err))

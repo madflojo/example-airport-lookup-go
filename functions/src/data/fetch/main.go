@@ -32,13 +32,14 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
 
 	f.logging.Info(fmt.Sprintf("airports.csv downloaded with return code: %d", rsp.StatusCode))
 
-	if rsp.StatusCode >= 299 {
+	if rsp.StatusCode < 200 || rsp.StatusCode >= 300 {
 		f.logging.Error(fmt.Sprintf("airports.csv download failed with return code: %d", rsp.StatusCode))
 		return nil, fmt.Errorf("failed to get airports.csv: http request returned %d", rsp.StatusCode)
 	}
 
 	if rsp.Body == nil {
-		return []byte(""), nil
+		f.logging.Error("airports.csv download returned empty response body")
+		return nil, fmt.Errorf("failed to get airports.csv: empty response body")
 	}
 	defer func() {
 		if closeErr := rsp.Body.Close(); closeErr != nil {
