@@ -1,18 +1,21 @@
 build:
 	## Build Init Function
 	mkdir -p functions/build/data
-	docker run --rm -v `pwd`:/build -w /build/functions/build/data/init tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/data/init.wasm -target wasi /build/functions/src/data/init/main.go
+	docker run --rm -v `pwd`:/build -w /build/functions/src/data/init tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/init.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
 	## Build CSV Fetch Function
 	mkdir -p functions/build/data
-	docker run --rm -v `pwd`:/build -w /build/functions/build/data/fetch tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/data/fetch.wasm -target wasi /build/functions/src/data/fetch/main.go
+	docker run --rm -v `pwd`:/build -w /build/functions/src/data/fetch tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/fetch.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
 	## Build CSV Load Function
 	mkdir -p functions/build/data
-	docker run --rm -v `pwd`:/build -w /build/functions/build/data/load tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/data/load.wasm -target wasi /build/functions/src/data/load/main.go
+	docker run --rm -v `pwd`:/build -w /build/functions/src/data/load tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/load.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
+	## Build US Seed Function
+	mkdir -p functions/build/data
+	docker run --rm -v `pwd`:/build -w /build/functions/src/data/seed tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/seed.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
 	## Build HTTP Request Handler Function
 	mkdir -p functions/build/handlers
-	docker run --rm -v `pwd`:/build -w /build/functions/build/handlers/lookup/ tinygo/tinygo:0.25.0 tinygo build -o /build/functions/build/handlers/lookup.wasm -target wasi /build/functions/src/handlers/lookup/main.go
+	docker run --rm -v `pwd`:/build -w /build/functions/src/handlers/lookup tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/handlers/lookup.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
 
-.PHONY: tests
+.PHONY: tests tidy
 tests:
 	## Run tests
 	mkdir -p coverage
@@ -20,6 +23,15 @@ tests:
 	go tool cover -html=coverage/coverage.out -o coverage/coverage.html
 	## Run tests for the lookup function
 	$(MAKE) -C functions/src/handlers/lookup tests
+
+tidy:
+	## Run go mod tidy for all function modules
+	@set -e; \
+	for mod in $$(find functions/src -name go.mod | sort); do \
+		dir=$$(dirname $$mod); \
+		echo "==> $$dir"; \
+		(cd $$dir && go mod tidy); \
+	done
 
 docker-compose:
 	docker compose up -d mysql redis

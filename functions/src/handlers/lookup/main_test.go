@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -55,3 +56,64 @@ func TestDecodeFields(t *testing.T) {
 		})
 	}
 }
+
+type ResponseHelperTestCase struct {
+	name          string
+	payload       string
+	expectedParts []string
+}
+
+func TestSuccessResponse(t *testing.T) {
+	tt := []ResponseHelperTestCase{
+		{
+			name:    "WrapsAirportPayload",
+			payload: `{"local_code":"PHX","name":"Phoenix Sky Harbor International Airport"}`,
+			expectedParts: []string{
+				`"ok":true`,
+				`"source":"sql"`,
+				`"airport":{"local_code":"PHX","name":"Phoenix Sky Harbor International Airport"}`,
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			result := string(successResponse("sql", tc.payload))
+			for _, part := range tc.expectedParts {
+				if !strings.Contains(result, part) {
+					t.Fatalf("expected response to contain %q, got %q", part, result)
+				}
+			}
+		})
+	}
+}
+
+func TestErrorResponse(t *testing.T) {
+	tt := []ResponseHelperTestCase{
+		{
+			name:    "IncludesStageAndError",
+			payload: "local_code is required",
+			expectedParts: []string{
+				`"ok":false`,
+				`"stage":"validation"`,
+				`"local_code":""`,
+				`"error":"local_code is required"`,
+			},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			result := string(errorResponse("validation", "", errString(tc.payload)))
+			for _, part := range tc.expectedParts {
+				if !strings.Contains(result, part) {
+					t.Fatalf("expected response to contain %q, got %q", part, result)
+				}
+			}
+		})
+	}
+}
+
+type errString string
+
+func (e errString) Error() string { return string(e) }

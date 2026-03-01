@@ -5,11 +5,6 @@ services:
     image: madflojo/tarmac:unstable
     ports:
       - 80:8080
-    healthcheck: 
-      test: ["CMD", "curl", "-f", "http://localhost:8080/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
     environment:
       - "APP_ENABLE_TLS=false"
       - "APP_LISTEN_ADDR=0.0.0.0:8080"
@@ -32,11 +27,6 @@ services:
     image: madflojo/tarmac:unstable
     ports:
       - 8080:8080
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/ready"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
     environment:
       - "APP_ENABLE_TLS=false"
       - "APP_LISTEN_ADDR=0.0.0.0:8080"
@@ -56,7 +46,7 @@ services:
   # Dependencies
   mysql:
     container_name: mysql
-    image: bitnami/mysql:latest
+    image: mysql:latest
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]

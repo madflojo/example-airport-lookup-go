@@ -8,15 +8,21 @@ package main
 import (
 	"fmt"
 
-	"github.com/tarmac-project/tarmac/pkg/sdk"
+	sdk "github.com/tarmac-project/sdk"
+	functionsdk "github.com/tarmac-project/sdk/function"
+	"github.com/tarmac-project/sdk/logging"
+	sdksql "github.com/tarmac-project/sdk/sql"
 )
 
 type Function struct {
-	tarmac *sdk.Tarmac
+	sdk      *sdk.SDK
+	logging  logging.Client
+	function functionsdk.Client
+	sql      sdksql.Client
 }
 
 func (f *Function) Handler(_ []byte) ([]byte, error) {
-	f.tarmac.Logger.Info("Initializing Airport Lookup Service")
+	f.logging.Info("Initializing Airport Lookup Service")
 
 	// Create MySQL Database structure
 	query := `CREATE TABLE IF NOT EXISTS airports (
@@ -32,34 +38,63 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
     status VARCHAR(255),
     PRIMARY KEY (local_code)
   );`
-	_, err := f.tarmac.SQL.Query(query)
+	_, err := f.sql.Exec(query)
 	if err != nil {
-		f.tarmac.Logger.Error(fmt.Sprintf("Failed to create table - %s", err))
+		f.logging.Error(fmt.Sprintf("Failed to create table - %s", err))
 		return []byte(""), fmt.Errorf("Failed to create table: %s", err)
 	}
-	f.tarmac.Logger.Info("Created database table")
+	f.logging.Info("Created database table")
 
-	// Load Airport Data
-	_, err = f.tarmac.Function.Call("load", []byte(""))
+	// Seed baseline airport data
+	loadRsp, err := f.function.Call("seed", []byte(""))
 	if err != nil {
-		f.tarmac.Logger.Error(fmt.Sprintf("Failed to load airport data - %s", err))
-		return []byte(""), fmt.Errorf("Failed to load airport data: %s", err)
+		f.logging.Error(fmt.Sprintf("Failed to seed airport data - %s", err))
+		return []byte(""), fmt.Errorf("Failed to seed airport data: %s", err)
 	}
-	f.tarmac.Logger.Info("Loaded airport data")
+	if len(loadRsp) == 0 {
+		f.logging.Warn("Seed function returned empty summary payload")
+	} else {
+		f.logging.Info(fmt.Sprintf("Seed function summary: %s", string(loadRsp)))
+	}
+	f.logging.Info("Seeded airport data")
 
 	return []byte(""), nil
 }
 
-func main() {
+//go:wasmexport wapc_init
+func Initialize() {
 	var err error
 
 	// Initialize Function
 	f := &Function{}
 
 	// Initialize the Tarmac SDK
-	f.tarmac, err = sdk.New(sdk.Config{
+	f.sdk, err = sdk.New(sdk.Config{
 		Namespace: "tarmac",
 		Handler:   f.Handler,
+	})
+	if err != nil {
+		return
+	}
+
+	cfg := f.sdk.Config()
+
+	f.logging, err = logging.New(logging.Config{
+		SDKConfig: cfg,
+	})
+	if err != nil {
+		return
+	}
+
+	f.function, err = functionsdk.New(functionsdk.Config{
+		SDKConfig: cfg,
+	})
+	if err != nil {
+		return
+	}
+
+	f.sql, err = sdksql.New(sdksql.Config{
+		SDKConfig: cfg,
 	})
 	if err != nil {
 		return
