@@ -40,7 +40,9 @@ type Airport struct {
 }
 
 var (
-	ErrMissingFields  = errors.New("missing required fields")
+	// ErrMissingFields is returned when required airport fields are not present.
+	ErrMissingFields = errors.New("missing required fields")
+	// ErrUnknownCountry is returned when the ISO country cannot be mapped to an emoji flag.
 	ErrUnknownCountry = errors.New("unable to lookup country emoji")
 )
 

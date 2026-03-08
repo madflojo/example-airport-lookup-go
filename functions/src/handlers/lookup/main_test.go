@@ -17,8 +17,10 @@ type DecodeDataTestCase struct {
 func TestDecodeFields(t *testing.T) {
 	tt := []DecodeDataTestCase{
 		{
-			name:  "Valid",
-			input: []byte(`[{"local_code":"bG9jYWxfY29kZQ==", "name":"bmFtZQ==", "country":"Y291bnRyeQ==", "emoji":"ZW1vamk=", "type":"dHlwZQ==", "type_emoji":"dHlwZV9lbW9qaQ==", "status":"c3RhdHVz"}]`),
+			name: "Valid",
+			input: []byte(
+				`[{"local_code":"bG9jYWxfY29kZQ==", "name":"bmFtZQ==", "country":"Y291bnRyeQ==", "emoji":"ZW1vamk=", "type":"dHlwZQ==", "type_emoji":"dHlwZV9lbW9qaQ==", "status":"c3RhdHVz"}]`,
+			),
 			expected: map[string]string{
 				"local_code": "local_code",
 				"name":       "name",
@@ -30,8 +32,10 @@ func TestDecodeFields(t *testing.T) {
 			},
 		},
 		{
-			name:     "Invalid",
-			input:    []byte(`[{"local_code":"bG9jYWxfY29kZQ==", "name":"INVALID", "country":"Y291bnRyeQ==", "emoji":"ZW1vamk=", "type":"dHlwZQ==", "type_emoji":"dHlwZV9lbW9qaQ==", "status":"c3RhdHVz"}]`),
+			name: "Invalid",
+			input: []byte(
+				`[{"local_code":"bG9jYWxfY29kZQ==", "name":"INVALID", "country":"Y291bnRyeQ==", "emoji":"ZW1vamk=", "type":"dHlwZQ==", "type_emoji":"dHlwZV9lbW9qaQ==", "status":"c3RhdHVz"}]`,
+			),
 			expected: nil,
 			err:      true,
 		},
@@ -164,5 +168,32 @@ func TestErrorResponseEscapesJSON(t *testing.T) {
 	}
 	if payload["error"] != rawErr.Error() {
 		t.Fatalf("expected error message to round-trip, got %v", payload["error"])
+	}
+}
+
+func TestParseLocalCode(t *testing.T) {
+	_, err := parseLocalCode([]byte(`{}`))
+	if err == nil {
+		t.Fatalf("expected error when local_code is missing")
+	}
+
+	code, err := parseLocalCode([]byte(`{"local_code":"PHX"}`))
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if code != "PHX" {
+		t.Fatalf("expected PHX, got %q", code)
+	}
+}
+
+func TestTrimStagePrefix(t *testing.T) {
+	err := trimStagePrefix(errors.New("sql_query: airport not found"))
+	if err.Error() != "airport not found" {
+		t.Fatalf("expected trimmed error, got %q", err.Error())
+	}
+
+	err = trimStagePrefix(errors.New("decode: invalid payload"))
+	if err.Error() != "invalid payload" {
+		t.Fatalf("expected trimmed error, got %q", err.Error())
 	}
 }

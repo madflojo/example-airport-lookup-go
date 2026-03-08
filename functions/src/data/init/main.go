@@ -14,6 +14,7 @@ import (
 	sdksql "github.com/tarmac-project/sdk/sql"
 )
 
+// Function initializes database objects and startup seed data.
 type Function struct {
 	sdk      *sdk.SDK
 	logging  logging.Client
@@ -21,10 +22,32 @@ type Function struct {
 	sql      sdksql.Client
 }
 
+// Handler initializes SQL schema and seeds initial data.
 func (f *Function) Handler(_ []byte) ([]byte, error) {
 	f.logging.Info("initializing airport lookup service")
 
-	// Create MySQL Database structure
+	if err := f.createTable(); err != nil {
+		f.logging.Error(fmt.Sprintf("failed to create table: %v", err))
+		return []byte(""), fmt.Errorf("failed to create table: %w", err)
+	}
+	f.logging.Info("created database table")
+
+	loadRsp, err := f.seedBaselineData()
+	if err != nil {
+		f.logging.Error(fmt.Sprintf("failed to seed airport data: %v", err))
+		return []byte(""), fmt.Errorf("failed to seed airport data: %w", err)
+	}
+	if len(loadRsp) == 0 {
+		f.logging.Error("seed function returned empty summary payload")
+		return []byte(""), fmt.Errorf("seed function returned empty summary payload")
+	}
+	f.logging.Info(fmt.Sprintf("seed function summary: %s", string(loadRsp)))
+	f.logging.Info("seeded airport data")
+
+	return []byte(""), nil
+}
+
+func (f *Function) createTable() error {
 	query := `CREATE TABLE IF NOT EXISTS airports (
     local_code VARCHAR(25) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
@@ -40,27 +63,18 @@ func (f *Function) Handler(_ []byte) ([]byte, error) {
   );`
 	_, err := f.sql.Exec(query)
 	if err != nil {
-		f.logging.Error(fmt.Sprintf("failed to create table: %v", err))
-		return []byte(""), fmt.Errorf("failed to create table: %w", err)
+		return err
 	}
-	f.logging.Info("created database table")
 
-	// Seed baseline airport data
-	loadRsp, err := f.function.Call("seed", []byte(""))
-	if err != nil {
-		f.logging.Error(fmt.Sprintf("failed to seed airport data: %v", err))
-		return []byte(""), fmt.Errorf("failed to seed airport data: %w", err)
-	}
-	if len(loadRsp) == 0 {
-		f.logging.Error("seed function returned empty summary payload")
-		return []byte(""), fmt.Errorf("seed function returned empty summary payload")
-	}
-	f.logging.Info(fmt.Sprintf("seed function summary: %s", string(loadRsp)))
-	f.logging.Info("seeded airport data")
-
-	return []byte(""), nil
+	return nil
 }
 
+func (f *Function) seedBaselineData() ([]byte, error) {
+	return f.function.Call("seed", []byte(""))
+}
+
+// Initialize sets up SDK and clients required by the init function.
+//
 //go:wasmexport wapc_init
 func Initialize() {
 	var err error

@@ -1,4 +1,11 @@
+COMPONENTS = functions/src/data/fetch functions/src/data/init functions/src/data/load functions/src/data/seed functions/src/handlers/lookup
+
+.PHONY: all clean tests lint build format benchmarks tidy
+
+all: build tests lint
+
 build:
+	@echo "Building all modules..."
 	## Build Init Function
 	mkdir -p functions/build/data
 	docker run --rm -v `pwd`:/build -w /build/functions/src/data/init tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/init.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
@@ -14,15 +21,48 @@ build:
 	## Build HTTP Request Handler Function
 	mkdir -p functions/build/handlers
 	docker run --rm -v `pwd`:/build -w /build/functions/src/handlers/lookup tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/handlers/lookup.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
+	@for dir in $(COMPONENTS); do \
+		$(MAKE) -C $$dir build || exit 1; \
+	done
 
-.PHONY: tests tidy
 tests:
-	## Run tests
+	@echo "Running tests for all modules..."
 	mkdir -p coverage
 	go test -v -race -covermode=atomic -coverprofile=coverage/coverage.out ./...
 	go tool cover -html=coverage/coverage.out -o coverage/coverage.html
-	## Run tests for the lookup function
-	$(MAKE) -C functions/src/handlers/lookup tests
+	@for dir in $(COMPONENTS); do \
+		$(MAKE) -C $$dir tests || exit 1; \
+	done
+
+benchmarks:
+	@echo "Running benchmarks for all modules..."
+	go test -bench=. -benchmem ./...
+	@for dir in $(COMPONENTS); do \
+		$(MAKE) -C $$dir benchmarks || exit 1; \
+	done
+
+format:
+	@echo "Formatting code..."
+	@gofmt -s -w .
+	@if command -v golines >/dev/null 2>&1; then \
+		golines -w .; \
+	else \
+		echo "golines not installed, skipping line wrapping"; \
+	fi
+	@for dir in $(COMPONENTS); do \
+		$(MAKE) -C $$dir format || exit 1; \
+	done
+
+lint:
+	@echo "Linting code..."
+	@if command -v golangci-lint >/dev/null 2>&1; then \
+		golangci-lint run ./...; \
+		for dir in $(COMPONENTS); do \
+			$(MAKE) -C $$dir lint || exit 1; \
+		done; \
+	else \
+		echo "golangci-lint not installed, skipping lint"; \
+	fi
 
 tidy:
 	## Run go mod tidy for all function modules
@@ -63,5 +103,12 @@ run-steady: build docker-compose-background
 
 
 clean:
+	@echo "Cleaning build artifacts..."
+	@for dir in $(COMPONENTS); do \
+		$(MAKE) -C $$dir clean || exit 1; \
+	done
 	rm -rf functions/build
+	@find . -type f -name "*.test" -delete
+	@find . -type f -name "coverage.out" -delete
+	@find . -type f -name "coverage.html" -delete
 	docker compose down --remove-orphans
