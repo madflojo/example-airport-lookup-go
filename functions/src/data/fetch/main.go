@@ -40,6 +40,13 @@ func (f *Function) fetchAirportCSV() ([]byte, error) {
 		f.logging.Error(fmt.Sprintf("failed to get airports.csv: %v", err))
 		return nil, fmt.Errorf("failed to get airports.csv: %w", err)
 	}
+	if rsp.Body != nil {
+		defer func() {
+			if closeErr := rsp.Body.Close(); closeErr != nil {
+				f.logging.Warn(fmt.Sprintf("failed to close airports.csv response body: %v", closeErr))
+			}
+		}()
+	}
 
 	f.logging.Info(fmt.Sprintf("airports.csv downloaded with return code: %d", rsp.StatusCode))
 
@@ -57,11 +64,6 @@ func (f *Function) fetchAirportCSV() ([]byte, error) {
 		f.logging.Error("airports.csv download returned empty response body")
 		return nil, fmt.Errorf("failed to get airports.csv: empty response body")
 	}
-	defer func() {
-		if closeErr := rsp.Body.Close(); closeErr != nil {
-			f.logging.Warn(fmt.Sprintf("failed to close airports.csv response body: %v", closeErr))
-		}
-	}()
 
 	body, err := io.ReadAll(rsp.Body)
 	if err != nil {
