@@ -4,8 +4,8 @@ github.com/enescakir/emoji v1.0.0 h1:W+HsNql8swfCQFtioDGDHCHri8nudlK1n5p2rHCJoog
 github.com/enescakir/emoji v1.0.0/go.mod h1:Bt1EKuLnKDTYpLALApstIkAjdDrS/8IAgTkKp+WKFD0=
 github.com/tarmac-project/example-airport-lookup-go v0.0.0-20231023010400-e4b3efdea82f h1:XhPXDWSza1ae0WBqq3iwRGR5N2/x5W0gFamNULathXM=
 github.com/tarmac-project/example-airport-lookup-go v0.0.0-20231023010400-e4b3efdea82f/go.mod h1:mpM+9904v8UU6HzL/giS7yLzuGvezbDQvdKw6byxO80=
-github.com/tarmac-project/protobuf-go v0.0.0-20251018194459-da5e9a58aa3f h1:ej3NiKuKuy8QT1z5v664VVwgSymWu0s9iQh1DeCzArY=
-github.com/tarmac-project/protobuf-go v0.0.0-20251018194459-da5e9a58aa3f/go.mod h1:ZF7p3bE27AqFkb5JeOsnIPZAiihzggZjgOlyPLdiF40=
+github.com/tarmac-project/protobuf-go v0.1.0 h1:d3JPVVFejEQvYFM8eZWhnn2Ops8d7pShJP5cTohcCUA=
+github.com/tarmac-project/protobuf-go v0.1.0/go.mod h1:ZF7p3bE27AqFkb5JeOsnIPZAiihzggZjgOlyPLdiF40=
 github.com/tarmac-project/sdk v0.2.0 h1:pdqigefrrUjVT0pFEPBbdw4m5nHEInccZovirMbjnBo=
 github.com/tarmac-project/sdk v0.2.0/go.mod h1:G1FkDLzCzIuAhKbCfzbqeOpB3eBAS0tmMCeb5q0ID0s=
 github.com/tarmac-project/sdk/function v0.2.0 h1:QVNY8alhDvIVESU2EIwgqicUUcFnJlKubxgTjIvzQLs=
