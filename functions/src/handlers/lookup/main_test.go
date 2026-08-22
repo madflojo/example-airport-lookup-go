@@ -80,6 +80,15 @@ func TestSuccessResponse(t *testing.T) {
 				`"airport":{"local_code":"PHX","name":"Phoenix Sky Harbor International Airport"}`,
 			},
 		},
+		{
+			name:    "QuotesInvalidPayload",
+			payload: `{"local_code":"PHX"`,
+			expectedParts: []string{
+				`"ok":true`,
+				`"source":"sql"`,
+				`"airport":"{\"local_code\":\"PHX\""`,
+			},
+		},
 	}
 
 	for _, tc := range tt {

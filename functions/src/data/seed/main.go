@@ -6,7 +6,6 @@ data for local/dev runs.
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -378,12 +377,12 @@ func buildSeedUpsertQuery(airport airportSeed) string {
 }
 
 func marshalSeedSummary(summary seedSummary) []byte {
-	data, err := json.Marshal(summary)
-	if err != nil {
-		return []byte(`{"seeded_airports":0,"successful_upsert":0,"failed_upsert":0}`)
-	}
-
-	return data
+	return []byte(fmt.Sprintf(
+		`{"seeded_airports":%d,"successful_upsert":%d,"failed_upsert":%d}`,
+		summary.SeededAirports,
+		summary.SuccessUpsert,
+		summary.FailedUpsert,
+	))
 }
 
 // Initialize sets up SDK and SQL clients required by the seed function.
