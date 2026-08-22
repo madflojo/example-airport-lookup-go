@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
 	sdk "github.com/tarmac-project/sdk"
@@ -192,8 +191,42 @@ func jsonObjectOrString(value string) string {
 }
 
 func jsonString(value string) string {
-	return strconv.Quote(value)
+	var b strings.Builder
+	b.Grow(len(value) + 2)
+	b.WriteByte('"')
+
+	for _, r := range value {
+		switch r {
+		case '\\', '"':
+			b.WriteByte('\\')
+			b.WriteRune(r)
+		case '\b':
+			b.WriteString(`\b`)
+		case '\f':
+			b.WriteString(`\f`)
+		case '\n':
+			b.WriteString(`\n`)
+		case '\r':
+			b.WriteString(`\r`)
+		case '\t':
+			b.WriteString(`\t`)
+		default:
+			if r < 0x20 {
+				b.WriteString(`\u00`)
+				b.WriteByte(hexChars[byte(r)>>4])
+				b.WriteByte(hexChars[byte(r)&0x0f])
+				continue
+			}
+			b.WriteRune(r)
+		}
+	}
+
+	b.WriteByte('"')
+
+	return b.String()
 }
+
+const hexChars = "0123456789abcdef"
 
 func validateLocalCode(localCode string) (string, error) {
 	if !localCodePattern.MatchString(localCode) {

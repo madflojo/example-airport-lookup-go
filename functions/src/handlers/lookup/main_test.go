@@ -180,6 +180,20 @@ func TestErrorResponseEscapesJSON(t *testing.T) {
 	}
 }
 
+func TestErrorResponseEscapesControlBytesAsJSON(t *testing.T) {
+	rawErr := errors.New("bad \x00 byte")
+	data := errorResponse("validation", "PHX", rawErr)
+
+	var payload map[string]any
+	if err := json.Unmarshal(data, &payload); err != nil {
+		t.Fatalf("expected valid json, got error: %v", err)
+	}
+
+	if payload["error"] != rawErr.Error() {
+		t.Fatalf("expected error message to round-trip, got %v", payload["error"])
+	}
+}
+
 func TestParseLocalCode(t *testing.T) {
 	_, err := parseLocalCode([]byte(`{}`))
 	if err == nil {
