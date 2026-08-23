@@ -9,7 +9,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -173,14 +172,13 @@ func buildAirportUpsertQuery(ap airportpkg.Airport) string {
 }
 
 func marshalLoadSummary(summary loadSummary) []byte {
-	data, err := json.Marshal(summary)
-	if err != nil {
-		return []byte(
-			`{"fetched_bytes":0,"parsed_airports":0,"successful_upsert":0,"failed_upsert":0}`,
-		)
-	}
-
-	return data
+	return []byte(fmt.Sprintf(
+		`{"fetched_bytes":%d,"parsed_airports":%d,"successful_upsert":%d,"failed_upsert":%d}`,
+		summary.FetchedBytes,
+		summary.ParsedAirports,
+		summary.SuccessUpsert,
+		summary.FailedUpsert,
+	))
 }
 
 // Initialize sets up SDK and clients required by the load function.

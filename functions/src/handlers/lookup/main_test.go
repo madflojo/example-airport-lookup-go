@@ -80,6 +80,15 @@ func TestSuccessResponse(t *testing.T) {
 				`"airport":{"local_code":"PHX","name":"Phoenix Sky Harbor International Airport"}`,
 			},
 		},
+		{
+			name:    "QuotesInvalidPayload",
+			payload: `{"local_code":"PHX"`,
+			expectedParts: []string{
+				`"ok":true`,
+				`"source":"sql"`,
+				`"airport":"{\"local_code\":\"PHX\""`,
+			},
+		},
 	}
 
 	for _, tc := range tt {
@@ -166,6 +175,20 @@ func TestErrorResponseEscapesJSON(t *testing.T) {
 	if payload["local_code"] != "PHX" {
 		t.Fatalf("expected local_code=PHX, got %v", payload["local_code"])
 	}
+	if payload["error"] != rawErr.Error() {
+		t.Fatalf("expected error message to round-trip, got %v", payload["error"])
+	}
+}
+
+func TestErrorResponseEscapesControlBytesAsJSON(t *testing.T) {
+	rawErr := errors.New("bad \x00 byte")
+	data := errorResponse("validation", "PHX", rawErr)
+
+	var payload map[string]any
+	if err := json.Unmarshal(data, &payload); err != nil {
+		t.Fatalf("expected valid json, got error: %v", err)
+	}
+
 	if payload["error"] != rawErr.Error() {
 		t.Fatalf("expected error message to round-trip, got %v", payload["error"])
 	}

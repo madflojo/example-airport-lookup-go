@@ -7,7 +7,6 @@ package main
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -113,12 +112,7 @@ func (f *Function) queryAirport(localCode string) ([]byte, error) {
 		Status:    decoded["status"],
 	}
 
-	airportJSON, err := json.Marshal(airport)
-	if err != nil {
-		return nil, fmt.Errorf("encode: %w", err)
-	}
-
-	return airportJSON, nil
+	return []byte(formatAirportJSON(airport)), nil
 }
 
 func handleAirportQueryError(localCode string, err error, logger logging.Client) []byte {
@@ -153,32 +147,11 @@ func trimStagePrefix(err error) error {
 }
 
 func successResponse(source, airportJSON string) []byte {
-	airport := json.RawMessage(`{}`)
-	if json.Valid([]byte(airportJSON)) {
-		airport = json.RawMessage(airportJSON)
-	} else {
-		quotedAirportJSON, err := json.Marshal(airportJSON)
-		if err == nil {
-			airport = json.RawMessage(quotedAirportJSON)
-		}
-	}
-
-	response := struct {
-		Ok      bool            `json:"ok"`
-		Source  string          `json:"source"`
-		Airport json.RawMessage `json:"airport"`
-	}{
-		Ok:      true,
-		Source:  source,
-		Airport: airport,
-	}
-
-	data, err := json.Marshal(response)
-	if err != nil {
-		return []byte(`{"ok":true,"source":"unknown","airport":{}}`)
-	}
-
-	return data
+	return []byte(fmt.Sprintf(
+		`{"ok":true,"source":%s,"airport":%s}`,
+		jsonString(source),
+		jsonObjectOrString(airportJSON),
+	))
 }
 
 func errorResponse(stage, localCode string, err error) []byte {
@@ -187,27 +160,73 @@ func errorResponse(stage, localCode string, err error) []byte {
 		errMessage = err.Error()
 	}
 
-	response := struct {
-		Ok        bool   `json:"ok"`
-		Stage     string `json:"stage"`
-		LocalCode string `json:"local_code"`
-		Error     string `json:"error"`
-	}{
-		Ok:        false,
-		Stage:     stage,
-		LocalCode: localCode,
-		Error:     errMessage,
-	}
-
-	data, marshalErr := json.Marshal(response)
-	if marshalErr != nil {
-		return []byte(
-			`{"ok":false,"stage":"internal","local_code":"","error":"failed to encode error response"}`,
-		)
-	}
-
-	return data
+	return []byte(fmt.Sprintf(
+		`{"ok":false,"stage":%s,"local_code":%s,"error":%s}`,
+		jsonString(stage),
+		jsonString(localCode),
+		jsonString(errMessage),
+	))
 }
+
+func formatAirportJSON(airport airportRecord) string {
+	return fmt.Sprintf(
+		`{"local_code":%s,"name":%s,"country":%s,"emoji":%s,"type":%s,"type_emoji":%s,"status":%s}`,
+		jsonString(airport.LocalCode),
+		jsonString(airport.Name),
+		jsonString(airport.Country),
+		jsonString(airport.Emoji),
+		jsonString(airport.Type),
+		jsonString(airport.TypeEmoji),
+		jsonString(airport.Status),
+	)
+}
+
+func jsonObjectOrString(value string) string {
+	trimmed := strings.TrimSpace(value)
+	if fastjson.Validate(trimmed) == nil && strings.HasPrefix(trimmed, "{") {
+		return trimmed
+	}
+
+	return jsonString(value)
+}
+
+func jsonString(value string) string {
+	var b strings.Builder
+	b.Grow(len(value) + 2)
+	b.WriteByte('"')
+
+	for _, r := range value {
+		switch r {
+		case '\\', '"':
+			b.WriteByte('\\')
+			b.WriteRune(r)
+		case '\b':
+			b.WriteString(`\b`)
+		case '\f':
+			b.WriteString(`\f`)
+		case '\n':
+			b.WriteString(`\n`)
+		case '\r':
+			b.WriteString(`\r`)
+		case '\t':
+			b.WriteString(`\t`)
+		default:
+			if r < 0x20 {
+				b.WriteString(`\u00`)
+				b.WriteByte(hexChars[byte(r)>>4])
+				b.WriteByte(hexChars[byte(r)&0x0f])
+				continue
+			}
+			b.WriteRune(r)
+		}
+	}
+
+	b.WriteByte('"')
+
+	return b.String()
+}
+
+const hexChars = "0123456789abcdef"
 
 func validateLocalCode(localCode string) (string, error) {
 	if !localCodePattern.MatchString(localCode) {
