@@ -1,4 +1,7 @@
 COMPONENTS = functions/src/data/fetch functions/src/data/init functions/src/data/load functions/src/data/seed functions/src/handlers/lookup
+ROOT = $(CURDIR)
+TINYGO_IMAGE ?= tinygo/tinygo:0.38.0
+TINYGO_FLAGS ?= -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared
 
 .PHONY: all clean tests lint build format benchmarks tidy
 
@@ -6,23 +9,8 @@ all: build tests lint
 
 build:
 	@echo "Building all modules..."
-	## Build Init Function
-	mkdir -p functions/build/data
-	docker run --rm -v `pwd`:/build -w /build/functions/src/data/init tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/init.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
-	## Build CSV Fetch Function
-	mkdir -p functions/build/data
-	docker run --rm -v `pwd`:/build -w /build/functions/src/data/fetch tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/fetch.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
-	## Build CSV Load Function
-	mkdir -p functions/build/data
-	docker run --rm -v `pwd`:/build -w /build/functions/src/data/load tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/load.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
-	## Build US Seed Function
-	mkdir -p functions/build/data
-	docker run --rm -v `pwd`:/build -w /build/functions/src/data/seed tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/data/seed.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
-	## Build HTTP Request Handler Function
-	mkdir -p functions/build/handlers
-	docker run --rm -v `pwd`:/build -w /build/functions/src/handlers/lookup tinygo/tinygo:0.38.0 tinygo build -o /build/functions/build/handlers/lookup.wasm -scheduler=none --no-debug -target=wasip1 -buildmode=c-shared main.go
 	@for dir in $(COMPONENTS); do \
-		$(MAKE) -C $$dir build || exit 1; \
+		$(MAKE) -C $$dir build ROOT="$(ROOT)" TINYGO_IMAGE="$(TINYGO_IMAGE)" TINYGO_FLAGS="$(TINYGO_FLAGS)" || exit 1; \
 	done
 
 tests:
